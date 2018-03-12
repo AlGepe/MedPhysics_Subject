@@ -1,8 +1,19 @@
 import os.path
+import matplotlib.pyplot as plt
 from obci_readmanager.signal_processing import read_manager as read
 import numpy as np
 from obci_readmanager.signal_processing.balance.wii_preprocessing import *
 from obci_readmanager.signal_processing.balance.wii_analysis import *
+
+
+###############################################################################
+# Class to represent each measurement
+#
+# @param title Is the title of the Measurement (related to filename)
+# @param fileName Name of the file where the data is stored (absolute path)
+# @param tagData Object of class TagObject corresponding each measurement
+#
+###############################################################################
 
 
 class Measurement:
@@ -12,13 +23,22 @@ class Measurement:
         self.tagData = tagData
 
 
+###############################################################################
+# Class to represent the tags of each measurement
+#
+# @param title Name of the specific measurement under this tags
+# @param tags=[startTag, endTag] Markers for trimming data
+#
+###############################################################################
+
+
 class TagObject:
     def __init__(self, title, startTag, endTag):
         self.title = title
         self.tags = [startTag, endTag]
 
 ###############################################################################
-# Function that takes the file name and returns the data already processed
+# Function that takes the file name and returns the measured data raw
 #
 #
 # The data is returned as a 3-dim nadarray with:
@@ -50,10 +70,12 @@ def file2dataNoTags(fileName):
     return data
 
 ###############################################################################
-# Function that takes the file name and returns the data already processed
+# Function that takes the file name and tags to return the data trimmed using
+# the tags provided. If no tags provided the function calls file2dataNoTags
 #
 #
-# The data is returned as a 3-dim nadarray with:
+# For measurements with n tags, returns an n-dimensional ndarray consisting of
+# n x 3-dim arrays structured as follows:
 #               data[0] being the time values
 #               data[1] being the x values in cm
 #               data[2] being the y values in cm
@@ -87,6 +109,15 @@ def file2data(fileName, tags):
         data[i] = np.array([TIME, x, y])
 
     return data
+
+
+###############################################################################
+# Function Analyses data for Static mesurements with eyes closed and open
+#
+# Returns COP = [COP_x, COP_y] for further analysis
+#
+###############################################################################
+
 
 
 def analysisStatic(measurement):
@@ -128,12 +159,72 @@ def analysisStatic(measurement):
     return valueCOP
 
 
-def analysisSway(measurement):
-    raw_data = file2data(measurement.fileName, measurement.tagData.tags)
-    for dataSet in raw_data:
-        t = dataSet[0]
-        x = dataSet[1]
-        y = dataSet[2]
+###############################################################################
+# Function Analyses data for Sway measurements both Fast and sway&stay
+#
+# void type of function
+#
+###############################################################################
+
+
+def analysisSway(measurement, COP):
+    # Should be save for Fast and Stay variants, haven't checked
+    raw_data_Sway = file2data(measurement.fileName,
+                              measurement.tagData.tags)
+    # Calculate max displacement for each fast measurement
+    x = np.ndarray(shape=(3), dtype=np.ndarray)
+    y = np.ndarray(shape=(3), dtype=np.ndarray)
+    t = np.ndarray(shape=(3), dtype=np.ndarray)
+
+    for i in range(0, len(raw_data_Sway)):
+        t[i] = raw_data_Sway[i][0]
+        x[i] = raw_data_Sway[i][1]
+        y[i] = raw_data_Sway[i][2]
+        plt.plot(x[i], y[i])
+    swayX_max = [max(abs(x[0])), max(abs(x[1])), max(abs(x[2]))]
+    swayY_max = [max(abs(y[0])), max(abs(y[1])), max(abs(y[2]))]
+    # Correct for COP
+    swayX_max -= COP[0]
+    swayY_max -= COP[1]
+
+    # Print to file
+    stillFile = open('Analysis_results.txt', 'a')
+    for i in range(0, len(swayX_max)):
+        stillFile.write("Data for " + measurement.title +
+                        measurement.tagData.title + '\n')
+        stillFile.write("----------------------------------------"*2 + '\n')
+        stillFile.write('\n')
+        stillFile.write('\n')
+        stillFile.write("Maximal Sway in AP plane: " + str(swayX_max[i]) +
+                        " cm" + '\n')
+        stillFile.write("Maximal Sway in ML plane: " + str(swayY_max[i]) +
+                        " cm" + '\n')
+        stillFile.write("========================================"*2 + '\n')
+        stillFile.write('\n')
+
+    plt.show()
+    filename = measurement.title + measurement.tagData.title + '_XYpath.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.clf()
+    for dataSet in raw_data_Sway:
+        plt.plot(dataSet[0], dataSet[1]-COP[0])
+    filename = measurement.title + measurement.tagData.title + '_Xontime.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    for dataSet in raw_data_Sway:
+        plt.plot(dataSet[0], dataSet[2])-COP[1]
+    filename = measurement.title + measurement.tagData.title + '_Yontime.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+
+
+###############################################################################
+# Initialise the data according to the filename existing in '../Data/' folder
+#
+# This function is highly personal and is here only to make the
+# 'analysisWiiBoard.py' more readeable
+#
+# returns a list of 'Measurement' objects
+#
+###############################################################################
 
 
 def initialiseData():
