@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from obci_readmanager.signal_processing import read_manager as read
 import numpy as np
 from obci_readmanager.signal_processing.balance.wii_preprocessing import *
-from obci_readmanager.signal_processing.balance.wii_analysis import *
+# from obci_readmanager.signal_processing.balance.wii_analysis import *
 
 
 ###############################################################################
@@ -119,7 +119,6 @@ def file2data(fileName, tags):
 ###############################################################################
 
 
-
 def analysisStatic(measurement):
     raw_data = file2data(measurement.fileName, measurement.tagData.tags)[0]
     t = raw_data[0]
@@ -175,14 +174,15 @@ def analysisSway(measurement, COP):
     x = np.ndarray(shape=(3), dtype=np.ndarray)
     y = np.ndarray(shape=(3), dtype=np.ndarray)
     t = np.ndarray(shape=(3), dtype=np.ndarray)
-
+    swayX_max = np.zeros(3)
+    swayY_max = np.zeros(3)
     for i in range(0, len(raw_data_Sway)):
         t[i] = raw_data_Sway[i][0]
         x[i] = raw_data_Sway[i][1]
         y[i] = raw_data_Sway[i][2]
         plt.plot(x[i], y[i])
-    swayX_max = [max(abs(x[0])), max(abs(x[1])), max(abs(x[2]))]
-    swayY_max = [max(abs(y[0])), max(abs(y[1])), max(abs(y[2]))]
+        swayX_max[i] = max(abs(x[i]))
+        swayY_max[i] = max(abs(y[i]))
     # Correct for COP
     swayX_max -= COP[0]
     swayY_max -= COP[1]
@@ -208,12 +208,16 @@ def analysisSway(measurement, COP):
     plt.clf()
     for dataSet in raw_data_Sway:
         plt.plot(dataSet[0], dataSet[1]-COP[0])
+    plt.show()
     filename = measurement.title + measurement.tagData.title + '_Xontime.png'
     plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.clf()
     for dataSet in raw_data_Sway:
-        plt.plot(dataSet[0], dataSet[2])-COP[1]
+        plt.plot(dataSet[0], dataSet[2]-COP[1])
+    plt.show()
     filename = measurement.title + measurement.tagData.title + '_Yontime.png'
     plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.clf()
 
 
 ###############################################################################
@@ -228,6 +232,8 @@ def analysisSway(measurement, COP):
 
 
 def initialiseData():
+    # I know it's ugly but it cannot be much prettier with so much 'manual'
+    # input, can it?
     allTheFiles = [os.path.abspath('../')+'/Data/']*7
     allTheFiles[0] += "still_eyes_closed_eyes_open"
     allTheFiles[1] += "sway_back"
