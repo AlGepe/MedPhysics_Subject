@@ -153,6 +153,7 @@ def analysisStatic(measurement):
     stillFile.write("========================================"*2 + '\n'*2)
 
     # Graphs of motion in AP, ML and AP/ML
+    plt.plot(
     # Histogram of COP points
     print("COP: " + str(valueCOP))
     return valueCOP
