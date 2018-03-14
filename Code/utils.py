@@ -85,13 +85,15 @@ def file2dataNoTags(fileName):
 
 def file2data(fileName, tags):
 
+    # print(tags)
     if tags[0] == "" or tags[1] == "":
-        return file2data(fileName)
+        return file2dataNoTags(fileName)
     wbr = read.ReadManager(fileName+'.obci.xml', fileName+'.obci.raw',
                            fileName + '.obci.tag')
     cropped_by_tag = wii_cut_fragments(wbr, start_tag_name=tags[0],
                                        end_tags_names=[tags[1]])
     dimTags = len(cropped_by_tag)
+    print(cropped_by_tag)
     data = np.ndarray(shape=(dimTags), dtype=object)
     for i in range(0, dimTags):
         TL = cropped_by_tag[i].get_samples()[0, :]
@@ -119,9 +121,9 @@ def file2data(fileName, tags):
 ###############################################################################
 
 
-def analysisStatic(measurement, path4romberg=None):
-    raw_data = file2data(measurement.fileName, measurement.tagData.tags)[0]
-    t = raw_data[0]
+def analysisStatic(measur, path4romberg=None):
+    raw_data = file2data(measur.fileName, measur.tagData.tags)[0]
+    t = raw_data[0] - min(raw_data[0])
     x = raw_data[1]
     y = raw_data[2]
     maxSwayAP = max(abs(max(x)), abs(min(x)))
@@ -134,9 +136,10 @@ def analysisStatic(measurement, path4romberg=None):
     valueCOP = [np.average(x), np.average(y)]
     lengthAP = np.sum(abs(deltaX))
     lengthML = np.sum(abs(deltaY))
-    stillFile = open('Analysis_results.txt', 'a')
+    folder = os.path.abspath('../') + '/Data/Results/'
+    stillFile = open(folder + "Analysis_results.txt", 'a')
     stillFile.write("Data for standing still with " +
-                    measurement.tagData.title + '\n')
+                    measur.tagData.title + '\n')
     stillFile.write("----------------------------------------"*2 + '\n')
     stillFile.write('\n')
     stillFile.write('\n')
@@ -153,31 +156,65 @@ def analysisStatic(measurement, path4romberg=None):
     stillFile.write("Path Length in ML plane: " + str(lengthML) + " cm" + '\n')
     stillFile.write("========================================"*2 + '\n'*2)
 
-    # Graphs of motion in AP, ML and AP/ML
+    # Plot COP wander path
     plt.plot(x, y, 'o-')
-    plt.title("Motion of COP in the plane")
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_XYpath.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
     plt.close()
+
+    # Plot COP_x(t)
     plt.plot(t, x, 'o-')
-    plt.title("X position in time")
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_XinTime.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    filename = measur.title + '_' + measur.tagData.title + '_XinTime.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+
+    # Plot COP_y(t)
     plt.plot(t, y, 'o-')
-    plt.title("Y position in time")
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_YinTime.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    filename = measur.title + '_' + measur.tagData.title + '_YinTime.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
     # Histogram of COP points
+    plt.hist2d(x, y)
+    filename = measur.title + '_' + measur.tagData.title + '_XYhisto.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+    # Histogram of COP_x
+    plt.hist(x)
+    filename = measur.title + '_' + measur.tagData.title + '_Xhisto.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+    # Histogram of COP_y
+    plt.hist(y)
+    filename = measur.title + '_' + measur.tagData.title + '_Yhisto.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+
+
     print("COP: " + str(valueCOP))
     if (path4romberg is not None):
-        rombergSum = sum(path4romberg) + lengthAP + lengthML
-        rombergX = path4romberg[0] + lengthAP
-        rombergY = path4romberg[0] + lengthAP
+        rombergSum = (sum(path4romberg) - lengthAP - lengthML) / \
+            (sum(path4romberg) + lengthAP + lengthML)
+        rombergX = (path4romberg[0] - lengthAP) / \
+            (path4romberg[0] + lengthAP)
+        rombergY = (path4romberg[0] - lengthAP) / \
+            (path4romberg[0] + lengthAP)
         stillFile.write("****************************************" + '\n')
-        stillFile.write("Romberg coefficient for length = lenX + lenY: "
+        stillFile.write("Romberg coefficient for sum: "
                         + str(rombergSum) + '\n')
         stillFile.write("Romberg coefficient for X: "
                         + str(rombergX) + '\n')
@@ -197,10 +234,10 @@ def analysisStatic(measurement, path4romberg=None):
 ###############################################################################
 
 
-def analysisSway(measurement, COP):
+def analysisSway(measur, COP):
     # Should be save for Fast and Stay variants, haven't checked
-    raw_data_Sway = file2data(measurement.fileName,
-                              measurement.tagData.tags)
+    raw_data_Sway = file2data(measur.fileName,
+                              measur.tagData.tags)
     # Calculate max displacement for each fast measurement
     x = np.ndarray(shape=(3), dtype=np.ndarray)
     y = np.ndarray(shape=(3), dtype=np.ndarray)
@@ -211,6 +248,8 @@ def analysisSway(measurement, COP):
         t[i] = raw_data_Sway[i][0]
         x[i] = raw_data_Sway[i][1]
         y[i] = raw_data_Sway[i][2]
+        # convert time to relative time
+        t[i] -= min(t[i])
         plt.plot(x[i], y[i])
         swayX_max[i] = max(abs(x[i]))
         swayY_max[i] = max(abs(y[i]))
@@ -219,10 +258,11 @@ def analysisSway(measurement, COP):
     swayY_max -= COP[1]
 
     # Print to file
-    stillFile = open('Analysis_results.txt', 'a')
+    folder = os.path.abspath('../') + '/Data/Results/'
+    stillFile = open(folder + 'Analysis_results.txt', 'a')
     for i in range(0, len(swayX_max)):
-        stillFile.write("Data for " + measurement.title +
-                        measurement.tagData.title + '\n')
+        stillFile.write("Data for " + measur.title +
+                        measur.tagData.title + '\n')
         stillFile.write("----------------------------------------"*2 + '\n')
         stillFile.write('\n')
         stillFile.write('\n')
@@ -233,23 +273,30 @@ def analysisSway(measurement, COP):
         stillFile.write("========================================"*2 + '\n')
         stillFile.write('\n')
 
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_XYpath.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.clf()
+    # Plot for COP wandering path
+    filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+    # Plot for COP_x(t)
     for dataSet in raw_data_Sway:
         plt.plot(dataSet[0], dataSet[1]-COP[0])
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_Xontime.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.clf()
+    filename = measur.title + '_' + measur.tagData.title + '_Xontime.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename)  # , dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+    # Plot for COP_y(t)
     for dataSet in raw_data_Sway:
         plt.plot(dataSet[0], dataSet[2]-COP[1])
-    plt.show()
-    filename = measurement.title + measurement.tagData.title + '_Yontime.png'
-    plt.savefig(filename, dpi=300, bbox_inches='tight')
-    plt.clf()
-
+    filename = measur.title + '_' + measur.tagData.title + '_Yontime.png'
+    plt.title(filename[:-4])
+    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    plt.close()
 
 ###############################################################################
 # Initialise the data according to the filename existing in '../Data/' folder
