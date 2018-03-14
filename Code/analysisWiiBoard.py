@@ -1,17 +1,18 @@
 # import os.path
-from utils import file2data, analysisStatic, \
-    initialiseData, analysisSway  # , Measurement, TagObject
+from utils import analysisStatic, \
+    initialiseData, analysisSway  # , Measurement, TagObject, file2data,
 # import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 measurementList = initialiseData()
 
 # Static Eyes Open
-calibrationCOP = analysisStatic(measurementList[0])
+valuesWanted = analysisStatic(measurementList[0])
+calibrationCOP = valuesWanted[0]
 
 # Static Eyes Closed
-analysisStatic(measurementList[1])
+analysisStatic(measurementList[1], valuesWanted[1])
 
 # Analyse Sways
 for measurement in measurementList[4:10]:

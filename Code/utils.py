@@ -119,7 +119,7 @@ def file2data(fileName, tags):
 ###############################################################################
 
 
-def analysisStatic(measurement):
+def analysisStatic(measurement, path4romberg=None):
     raw_data = file2data(measurement.fileName, measurement.tagData.tags)[0]
     t = raw_data[0]
     x = raw_data[1]
@@ -150,13 +150,43 @@ def analysisStatic(measurement):
                     '\n')
     stillFile.write("Path Length in AP plane: " + str(lengthAP) + " cm" + '\n')
     stillFile.write("Path Length in ML plane: " + str(lengthML) + " cm" + '\n')
+    stillFile.write("Path Length in ML plane: " + str(lengthML) + " cm" + '\n')
     stillFile.write("========================================"*2 + '\n'*2)
 
     # Graphs of motion in AP, ML and AP/ML
-    plt.plot(
+    plt.plot(x, y, 'o-')
+    plt.title("Motion of COP in the plane")
+    plt.show()
+    filename = measurement.title + measurement.tagData.title + '_XYpath.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.close()
+    plt.plot(t, x, 'o-')
+    plt.title("X position in time")
+    plt.show()
+    filename = measurement.title + measurement.tagData.title + '_XinTime.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
+    plt.plot(t, y, 'o-')
+    plt.title("Y position in time")
+    plt.show()
+    filename = measurement.title + measurement.tagData.title + '_YinTime.png'
+    plt.savefig(filename, dpi=300, bbox_inches='tight')
     # Histogram of COP points
     print("COP: " + str(valueCOP))
-    return valueCOP
+    if (path4romberg is not None):
+        rombergSum = sum(path4romberg) + lengthAP + lengthML
+        rombergX = path4romberg[0] + lengthAP
+        rombergY = path4romberg[0] + lengthAP
+        stillFile.write("****************************************" + '\n')
+        stillFile.write("Romberg coefficient for length = lenX + lenY: "
+                        + str(rombergSum) + '\n')
+        stillFile.write("Romberg coefficient for X: "
+                        + str(rombergX) + '\n')
+        stillFile.write("Romberg coefficient for Y: "
+                        + str(rombergY) + '\n')
+        stillFile.write("****************************************" + '\n'*2)
+    paths_xy = [lengthAP, lengthML]
+    valuesOfInterest = [valueCOP, paths_xy]
+    return valuesOfInterest
 
 
 ###############################################################################
