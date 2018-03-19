@@ -59,6 +59,16 @@ def file2dataNoTags(fileName):
     BL = wbr.get_samples()[3, :]
     TIME = wbr.get_samples()[4, :]
 
+    sumAll = TL + TR + BL + BR
+    howManyZeros = np.sum(sumAll == 0.)
+
+    if howManyZeros > 0:
+        TL = TL[howManyZeros:]
+        TR = TR[howManyZeros:]
+        BL = BL[howManyZeros:]
+        BR = BR[howManyZeros:]
+        TIME = TIME[howManyZeros:]
+
     x = ((TR+BR) - (TL+BL)) / (TR+TL+BR+BL)
     y = ((TR+TL) - (BR+BL)) / (TR+TL+BR+BL)
 
@@ -83,6 +93,47 @@ def file2dataNoTags(fileName):
 ###############################################################################
 
 
+def file2dataGame(fileName, tags):
+    wbr = read.ReadManager(fileName+'.obci.xml', fileName+'.obci.raw',
+                           fileName + '.obci.tag')
+    cropped_by_tag = wii_cut_fragments(wbr, start_tag_name=tags[0],
+                                       end_tags_names=[tags[1]])
+    dimTags = len(cropped_by_tag)
+    data = np.ndarray(shape=(dimTags), dtype=object)
+    labels = np.ndarray(shape=(dimTags), dtype=object)
+    result = np.ndarray(shape=(dimTags), dtype=object)
+    for i in range(0, dimTags):
+        TL = cropped_by_tag[i].get_samples()[0, :]
+        TR = cropped_by_tag[i].get_samples()[1, :]
+        BR = cropped_by_tag[i].get_samples()[2, :]
+        BL = cropped_by_tag[i].get_samples()[3, :]
+        TIME = cropped_by_tag[i].get_samples()[4, :]
+        result[i] = cropped_by_tag[i].get_end_tag()['desc']['value']
+        labels[i] = cropped_by_tag[i].get_start_tag()['desc']['value']
+
+    x = ((TR+BR) - (TL+BL)) / (TR+TL+BR+BL)
+    y = ((TR+TL) - (BR+BL)) / (TR+TL+BR+BL)
+
+    x = x * 22.5  # Convert to cm
+    y = y * 13  # Convert to cm
+
+    data[i] = np.array([TIME, x, y])
+
+    return data, result, labels
+###############################################################################
+# Function that takes the file name and tags to return the data trimmed using
+# the tags provided. If no tags provided the function calls file2dataNoTags
+#
+#
+# For measurements with n tags, returns an n-dimensional ndarray consisting of
+# n x 3-dim arrays structured as follows:
+#               data[0] being the time values
+#               data[1] being the x values in cm
+#               data[2] being the y values in cm
+#
+###############################################################################
+
+
 def file2data(fileName, tags):
 
     # print(tags)
@@ -93,7 +144,6 @@ def file2data(fileName, tags):
     cropped_by_tag = wii_cut_fragments(wbr, start_tag_name=tags[0],
                                        end_tags_names=[tags[1]])
     dimTags = len(cropped_by_tag)
-    print(cropped_by_tag)
     data = np.ndarray(shape=(dimTags), dtype=object)
     for i in range(0, dimTags):
         TL = cropped_by_tag[i].get_samples()[0, :]
@@ -203,8 +253,6 @@ def analysisStatic(measur, path4romberg=None):
     # plt.show()
     plt.close()
 
-
-
     print("COP: " + str(valueCOP))
     if (path4romberg is not None):
         rombergSum = (sum(path4romberg) - lengthAP - lengthML) / \
@@ -244,16 +292,25 @@ def analysisSway(measur, COP):
     t = np.ndarray(shape=(3), dtype=np.ndarray)
     swayX_max = np.zeros(3)
     swayY_max = np.zeros(3)
-    for i in range(0, len(raw_data_Sway)):
-        t[i] = raw_data_Sway[i][0]
-        x[i] = raw_data_Sway[i][1]
-        y[i] = raw_data_Sway[i][2]
-        # convert time to relative time
-        t[i] -= min(t[i])
-        plt.plot(x[i], y[i])
-        swayX_max[i] = max(abs(x[i]))
-        swayY_max[i] = max(abs(y[i]))
-    # Correct for COP
+    # print(type(raw_data_Sway[0][0]) is np.float64)
+    # print(type(raw_data_Sway[0][0]))
+    # print(raw_data_Sway)
+    if type(raw_data_Sway[0][0]) is np.float64:
+        t = raw_data_Sway[0]
+        x = raw_data_Sway[1]
+        y = raw_data_Sway[2]
+        plt.plot(x, y)
+    else:
+        for i in range(0, len(raw_data_Sway)):
+            t[i] = raw_data_Sway[i][0]
+            x[i] = raw_data_Sway[i][1]
+            y[i] = raw_data_Sway[i][2]
+            # convert time to relative time
+            t[i] -= min(t[i])
+            plt.plot(x[i], y[i])
+            swayX_max[i] = max(abs(x[i]))
+            swayY_max[i] = max(abs(y[i]))
+            # Correct for COP
     swayX_max -= COP[0]
     swayY_max -= COP[1]
 
@@ -277,26 +334,32 @@ def analysisSway(measur, COP):
     filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
-    # plt.show()
+    plt.show()
     plt.close()
 
     # Plot for COP_x(t)
-    for dataSet in raw_data_Sway:
-        plt.plot(dataSet[0], dataSet[1]-COP[0])
+    if (type(raw_data_Sway[0][0]) is np.float64):
+        plt.plot(t, x-COP[0])
+    else:
+        for dataSet in raw_data_Sway:
+            plt.plot(dataSet[0], dataSet[1]-COP[0])
     filename = measur.title + '_' + measur.tagData.title + '_Xontime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename)  # , dpi=300, bbox_inches='tight')
-    # plt.show()
-    plt.close()
+    plt.show()
+    plt.clf()
 
     # Plot for COP_y(t)
-    for dataSet in raw_data_Sway:
-        plt.plot(dataSet[0], dataSet[2]-COP[1])
+    if (type(raw_data_Sway[0][0]) is np.float64):
+        plt.plot(t, y-COP[1])
+    else:
+        for dataSet in raw_data_Sway:
+            plt.plot(dataSet[0], dataSet[2]-COP[1])
     filename = measur.title + '_' + measur.tagData.title + '_Yontime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
-    # plt.show()
-    plt.close()
+    plt.show()
+    plt.clf()
 
 ###############################################################################
 # Initialise the data according to the filename existing in '../Data/' folder
@@ -318,8 +381,8 @@ def initialiseData():
     allTheFiles[2] += "sway_forward"
     allTheFiles[3] += "sway_left"
     allTheFiles[4] += "sway_right"
-    allTheFiles[5] += "sway_stay_with_feedback"
-    allTheFiles[6] += "sway_with_feedback"
+    allTheFiles[5] += "sway_with_feedback"
+    allTheFiles[6] += "sway_stay_with_feedback"
     measurementList = np.ndarray(13, dtype=object)
     measurementList[0] = Measurement("Static_Measurement", allTheFiles[0],
                                      TagObject("Eyes_open",
