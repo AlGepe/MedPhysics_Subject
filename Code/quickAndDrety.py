@@ -13,11 +13,11 @@ measurementList = initialiseData()
 
 # Feeback baseline data
 
-raw_values, results, labels = file2dataGame(measurementList[12].fileName,
-                                            measurementList[12].tagData.tags)
+dict_values = file2dataGame(measurementList[12].fileName,
+                            measurementList[12].tagData.tags)
 
-# print(tags)
-for grade in results:
+# print(type(labels[0]))
+print(dict_values)
 
 '''
 for dataSet in data:

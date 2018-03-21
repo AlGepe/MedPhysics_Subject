@@ -74,6 +74,7 @@ def file2dataNoTags(fileName):
 
     x = x * 22.5  # Convert to cm
     y = y * 13  # Convert to cm
+    TIME -= min(TIME)
 
     data = np.array([TIME, x, y])
 
@@ -99,27 +100,35 @@ def file2dataGame(fileName, tags):
     cropped_by_tag = wii_cut_fragments(wbr, start_tag_name=tags[0],
                                        end_tags_names=[tags[1]])
     dimTags = len(cropped_by_tag)
-    data = np.ndarray(shape=(dimTags), dtype=object)
-    labels = np.ndarray(shape=(dimTags), dtype=object)
-    result = np.ndarray(shape=(dimTags), dtype=object)
+    data = {}
+    maxLevel = {'right': 0, 'left': 0, 'back': 0, 'forward': 0}
     for i in range(0, dimTags):
-        TL = cropped_by_tag[i].get_samples()[0, :]
-        TR = cropped_by_tag[i].get_samples()[1, :]
-        BR = cropped_by_tag[i].get_samples()[2, :]
-        BL = cropped_by_tag[i].get_samples()[3, :]
-        TIME = cropped_by_tag[i].get_samples()[4, :]
-        result[i] = cropped_by_tag[i].get_end_tag()['desc']['value']
-        labels[i] = cropped_by_tag[i].get_start_tag()['desc']['value']
+        grade = cropped_by_tag[i].get_end_tag()['desc']['value']
+        tempDict = {}
+        tempDict = eval(cropped_by_tag[i].get_start_tag()['desc']['value'])
+        if (grade and maxLevel[tempDict['direction']] < tempDict['level']):
 
-    x = ((TR+BR) - (TL+BL)) / (TR+TL+BR+BL)
-    y = ((TR+TL) - (BR+BL)) / (TR+TL+BR+BL)
+            maxLevel[tempDict['direction']] = tempDict['level']
+            TL = cropped_by_tag[i].get_samples()[0, :]
+            TR = cropped_by_tag[i].get_samples()[1, :]
+            BR = cropped_by_tag[i].get_samples()[2, :]
+            BL = cropped_by_tag[i].get_samples()[3, :]
+            TIME = cropped_by_tag[i].get_samples()[4, :]
+            # print((cropped_by_tag[i].get_start_tag()['desc']['value']))
+            # print(type(cropped_by_tag[i].get_start_tag()['desc']['value']))
+            # print(type(tempDict))
+            # labels.append(tempDict)
 
-    x = x * 22.5  # Convert to cm
-    y = y * 13  # Convert to cm
+            x = ((TR+BR) - (TL+BL)) / (TR+TL+BR+BL)
+            y = ((TR+TL) - (BR+BL)) / (TR+TL+BR+BL)
+            TIME -= min(TIME)
 
-    data[i] = np.array([TIME, x, y])
+            x = x * 22.5  # Convert to cm
+            y = y * 13  # Convert to cm
 
-    return data, result, labels
+            data[tempDict['direction']] = np.array([TIME, x, y])
+
+    return data
 ###############################################################################
 # Function that takes the file name and tags to return the data trimmed using
 # the tags provided. If no tags provided the function calls file2dataNoTags
@@ -157,6 +166,7 @@ def file2data(fileName, tags):
 
         x = x * 22.5  # Convert to cm
         y = y * 13  # Convert to cm
+        TIME -= min(TIME)
 
         data[i] = np.array([TIME, x, y])
 
@@ -197,9 +207,9 @@ def analysisStatic(measur, path4romberg=None):
                     '\n')
     stillFile.write("Maximal Sway in ML plane: " + str(maxSwayML) + " cm" +
                     '\n')
-    stillFile.write("Mean Velocity in AP plane: " + str(mean_vAP) + " cm" +
+    stillFile.write("Mean Velocity in AP plane: " + str(mean_vAP) + " cm/s" +
                     '\n')
-    stillFile.write("Mean Velocity in ML plane: " + str(mean_vML) + " cm" +
+    stillFile.write("Mean Velocity in ML plane: " + str(mean_vML) + " cm/s" +
                     '\n')
     stillFile.write("Path Length in AP plane: " + str(lengthAP) + " cm" + '\n')
     stillFile.write("Path Length in ML plane: " + str(lengthML) + " cm" + '\n')
@@ -286,12 +296,13 @@ def analysisSway(measur, COP):
     # Should be save for Fast and Stay variants, haven't checked
     raw_data_Sway = file2data(measur.fileName,
                               measur.tagData.tags)
+    dimData = len(raw_data_Sway)
     # Calculate max displacement for each fast measurement
-    x = np.ndarray(shape=(3), dtype=np.ndarray)
-    y = np.ndarray(shape=(3), dtype=np.ndarray)
-    t = np.ndarray(shape=(3), dtype=np.ndarray)
-    swayX_max = np.zeros(3)
-    swayY_max = np.zeros(3)
+    x = np.ndarray(shape=(dimData), dtype=np.ndarray)
+    y = np.ndarray(shape=(dimData), dtype=np.ndarray)
+    t = np.ndarray(shape=(dimData), dtype=np.ndarray)
+    swayX_max = np.zeros(dimData)
+    swayY_max = np.zeros(dimData)
     # print(type(raw_data_Sway[0][0]) is np.float64)
     # print(type(raw_data_Sway[0][0]))
     # print(raw_data_Sway)
@@ -301,12 +312,12 @@ def analysisSway(measur, COP):
         y = raw_data_Sway[2]
         plt.plot(x, y)
     else:
+        print(len(raw_data_Sway))
         for i in range(0, len(raw_data_Sway)):
             t[i] = raw_data_Sway[i][0]
             x[i] = raw_data_Sway[i][1]
             y[i] = raw_data_Sway[i][2]
             # convert time to relative time
-            t[i] -= min(t[i])
             plt.plot(x[i], y[i])
             swayX_max[i] = max(abs(x[i]))
             swayY_max[i] = max(abs(y[i]))

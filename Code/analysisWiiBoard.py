@@ -16,6 +16,7 @@ analysisStatic(measurementList[1], valuesWanted[1])
 
 # Analyse Sways
 for measurement in measurementList[2:11]:
+    # measurement = measurementList[12]
     print(measurement.title)
     print(measurement.tagData.title)
     analysisSway(measurement, calibrationCOP)
