@@ -148,6 +148,8 @@ def file2data(fileName, tags):
     # print(tags)
     if tags[0] == "" or tags[1] == "":
         return file2dataNoTags(fileName)
+    elif (tags[0] == 'start_1' or tags[1] == 'finish'):
+        return file2dataGame(fileName, tags)
     wbr = read.ReadManager(fileName+'.obci.xml', fileName+'.obci.raw',
                            fileName + '.obci.tag')
     cropped_by_tag = wii_cut_fragments(wbr, start_tag_name=tags[0],
@@ -304,7 +306,9 @@ def analysisSway(measur, COP):
     swayX_max = np.zeros(dimData)
     swayY_max = np.zeros(dimData)
     # print(type(raw_data_Sway[0][0]) is np.float64)
-    # print(type(raw_data_Sway[0][0]))
+    print(type(raw_data_Sway))
+    print(type(raw_data_Sway[0]))
+    print(type(raw_data_Sway[0][0]))
     # print(raw_data_Sway)
     if type(raw_data_Sway[0][0]) is np.float64:
         t = raw_data_Sway[0]
@@ -315,15 +319,15 @@ def analysisSway(measur, COP):
         print(len(raw_data_Sway))
         for i in range(0, len(raw_data_Sway)):
             t[i] = raw_data_Sway[i][0]
-            x[i] = raw_data_Sway[i][1]
-            y[i] = raw_data_Sway[i][2]
+            x[i] = raw_data_Sway[i][1] - COP[0]
+            y[i] = raw_data_Sway[i][2] - COP[1]
             # convert time to relative time
             plt.plot(x[i], y[i])
             swayX_max[i] = max(abs(x[i]))
             swayY_max[i] = max(abs(y[i]))
             # Correct for COP
-    swayX_max -= COP[0]
-    swayY_max -= COP[1]
+    # swayX_max -= COP[0]
+    # swayY_max -= COP[1]
 
     # Print to file
     folder = os.path.abspath('../') + '/Data/Results/'
@@ -345,32 +349,73 @@ def analysisSway(measur, COP):
     filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
-    plt.show()
+    # plt.show()
     plt.close()
 
     # Plot for COP_x(t)
     if (type(raw_data_Sway[0][0]) is np.float64):
-        plt.plot(t, x-COP[0])
+        plt.plot(t, x)  # -COP[0])
     else:
         for dataSet in raw_data_Sway:
             plt.plot(dataSet[0], dataSet[1]-COP[0])
     filename = measur.title + '_' + measur.tagData.title + '_Xontime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename)  # , dpi=300, bbox_inches='tight')
-    plt.show()
+    # plt.show()
     plt.clf()
 
     # Plot for COP_y(t)
     if (type(raw_data_Sway[0][0]) is np.float64):
-        plt.plot(t, y-COP[1])
+        plt.plot(t, y)  # -COP[1])
     else:
         for dataSet in raw_data_Sway:
             plt.plot(dataSet[0], dataSet[2]-COP[1])
     filename = measur.title + '_' + measur.tagData.title + '_Yontime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
-    plt.show()
+    # plt.show()
     plt.clf()
+
+
+###############################################################################
+# Function Analyses data for Sway measurements both Fast and sway&stay
+#
+# void type of function
+#
+###############################################################################
+
+def analysisSwayGame(measur, COP):
+    raw_data = file2data(measur.fileName,
+                         measur.tagData.tags)
+    folder = os.path.abspath('../') + '/Data/Results/'
+    for direction, values in raw_data.items():
+        print(direction + '""""""""""""""""""""""""""""""""""')
+        print('Max X: ' + str(max(values[1])))
+        print('Max Y: ' + str(max(values[2])))
+        print(direction + '""""""""""""""""""""""""""""""""""' + '\n')
+        plt.plot(values[1], values[2])
+        filename = measur.title + '_' + measur.tagData.title + '_' + \
+            direction + '_XYpath.png'
+        plt.title(filename[:-4])
+        plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+        '''
+        plt.show()
+        plt.close()
+        plt.plot(values[0], values[1])
+        filename = measur.title + '_' + measur.tagData.title + '_' + \
+            direction + '_XonTime.png'
+        plt.title(filename[:-4])
+        plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+        plt.show()
+        plt.close()
+        plt.plot(values[0], values[2])
+        filename = measur.title + '_' + measur.tagData.title + '_' + \
+            direction + '_YonTime.png'
+        plt.title(filename[:-4])
+        plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
+        '''
+    plt.show()
+    plt.close()
 
 ###############################################################################
 # Initialise the data according to the filename existing in '../Data/' folder
@@ -422,11 +467,13 @@ def initialiseData():
                                                "stop_fast"))
     measurementList[9] = Measurement("Sway_Right", allTheFiles[4],
                                      TagObject("Stay", "start", "stop"))
+    '''
     measurementList[10] = Measurement("Feeback Measurement", allTheFiles[5],
                                       TagObject("Baseline", "baseline_start",
                                                 "baseline_stop"))
-    measurementList[11] = Measurement("Feeback Measurement", allTheFiles[5],
+                                                '''
+    measurementList[10] = Measurement("Feeback Measurement", allTheFiles[5],
                                       TagObject("Fast", "", ""))
-    measurementList[12] = Measurement("Feeback Measurement", allTheFiles[6],
+    measurementList[11] = Measurement("Feeback Measurement", allTheFiles[6],
                                       TagObject("Stay", "start_1", "finish"))
     return measurementList

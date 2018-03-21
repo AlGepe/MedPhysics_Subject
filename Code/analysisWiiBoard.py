@@ -1,5 +1,5 @@
 # import os.path
-from utils import analysisStatic, \
+from utils import analysisStatic, analysisSwayGame, \
     initialiseData, analysisSway  # , Measurement, TagObject, file2data,
 # import numpy as np
 # import matplotlib.pyplot as plt
@@ -14,12 +14,15 @@ calibrationCOP = valuesWanted[0]
 # Static Eyes Closed
 analysisStatic(measurementList[1], valuesWanted[1])
 
+'''
 # Analyse Sways
-for measurement in measurementList[2:11]:
+for measurement in measurementList[10:]:
     # measurement = measurementList[12]
     print(measurement.title)
     print(measurement.tagData.title)
     analysisSway(measurement, calibrationCOP)
+    '''
+analysisSwayGame(measurementList[11], valuesWanted[1])
 
 # Graphs of motion in AP, ML and AP/ML
 # Histogram of COP points
