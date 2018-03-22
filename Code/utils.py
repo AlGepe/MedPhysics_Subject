@@ -227,16 +227,20 @@ def analysisStatic(measur, path4romberg=None):
     plt.close()
 
     # Plot COP_x(t)
-    plt.plot(t, x, 'o-')
+    plt.plot(t, x, 'o-', label='x')
+    '''
     filename = measur.title + '_' + measur.tagData.title + '_XinTime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
+    plt.close()
 
     # Plot COP_y(t)
-    plt.plot(t, y, 'o-')
-    filename = measur.title + '_' + measur.tagData.title + '_YinTime.png'
+    '''
+    plt.plot(t, y, 'o-', label='y')
+    filename = measur.title + '_' + measur.tagData.title + '_inTime.png'
     plt.title(filename[:-4])
+    plt.legend(loc=1)
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
     plt.close()
@@ -393,7 +397,7 @@ def analysisSwayGame(measur, COP):
         print('Max X: ' + str(max(values[1])))
         print('Max Y: ' + str(max(values[2])))
         print(direction + '""""""""""""""""""""""""""""""""""' + '\n')
-        plt.plot(values[1], values[2])
+        plt.plot(values[1], values[2], label=direction)
         filename = measur.title + '_' + measur.tagData.title + '_' + \
             direction + '_XYpath.png'
         plt.title(filename[:-4])
@@ -414,6 +418,7 @@ def analysisSwayGame(measur, COP):
         plt.title(filename[:-4])
         plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
         '''
+    plt.legend(loc=4)
     plt.show()
     plt.close()
 
