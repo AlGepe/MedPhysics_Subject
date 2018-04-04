@@ -13,11 +13,17 @@ measurementList = initialiseData()
 
 # Feeback baseline data
 
-dict_values = file2dataGame(measurementList[12].fileName,
-                            measurementList[12].tagData.tags)
+dataToPlot = file2data(measurementList[2].fileName,
+                       measurementList[2].tagData.tags)
+print(dataToPlot.shape)
+for xy in dataToPlot:
+    plt.plot(xy[1], xy[2])
+    plt.plot(0, 0, 'mo', markersize=12)
+    # plt.plot(-1.*xy[2], -1.*xy[1])
+plt.show()
 
 # print(type(labels[0]))
-print(dict_values)
+# print(dict_values)
 
 '''
 for dataSet in data:

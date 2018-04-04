@@ -53,9 +53,9 @@ def file2dataNoTags(fileName):
 
     wbr = read.ReadManager(fileName+'.obci.xml', fileName+'.obci.raw',
                            fileName + '.obci.tag')
-    TL = wbr.get_samples()[0, :]
-    TR = wbr.get_samples()[1, :]
-    BR = wbr.get_samples()[2, :]
+    TR = wbr.get_samples()[0, :]
+    BR = wbr.get_samples()[1, :]
+    TL = wbr.get_samples()[2, :]
     BL = wbr.get_samples()[3, :]
     TIME = wbr.get_samples()[4, :]
 
@@ -109,9 +109,9 @@ def file2dataGame(fileName, tags):
         if (grade and maxLevel[tempDict['direction']] < tempDict['level']):
 
             maxLevel[tempDict['direction']] = tempDict['level']
-            TL = cropped_by_tag[i].get_samples()[0, :]
-            TR = cropped_by_tag[i].get_samples()[1, :]
-            BR = cropped_by_tag[i].get_samples()[2, :]
+            TR = cropped_by_tag[i].get_samples()[0, :]
+            BR = cropped_by_tag[i].get_samples()[1, :]
+            TL = cropped_by_tag[i].get_samples()[2, :]
             BL = cropped_by_tag[i].get_samples()[3, :]
             TIME = cropped_by_tag[i].get_samples()[4, :]
             # print((cropped_by_tag[i].get_start_tag()['desc']['value']))
@@ -157,9 +157,9 @@ def file2data(fileName, tags):
     dimTags = len(cropped_by_tag)
     data = np.ndarray(shape=(dimTags), dtype=object)
     for i in range(0, dimTags):
-        TL = cropped_by_tag[i].get_samples()[0, :]
-        TR = cropped_by_tag[i].get_samples()[1, :]
-        BR = cropped_by_tag[i].get_samples()[2, :]
+        TR = cropped_by_tag[i].get_samples()[0, :]
+        BR = cropped_by_tag[i].get_samples()[1, :]
+        TL = cropped_by_tag[i].get_samples()[2, :]
         BL = cropped_by_tag[i].get_samples()[3, :]
         TIME = cropped_by_tag[i].get_samples()[4, :]
 
@@ -188,16 +188,16 @@ def analysisStatic(measur, path4romberg=None):
     t = raw_data[0] - min(raw_data[0])
     x = raw_data[1]
     y = raw_data[2]
-    maxSwayAP = max(abs(max(x)), abs(min(x)))
-    maxSwayML = max(abs(max(y)), abs(min(y)))
+    maxSwayAP = max(abs(max(y)), abs(min(y)))
+    maxSwayML = max(abs(max(x)), abs(min(x)))
     deltaX = (x[1:] - x[:-1])
     deltaY = (y[1:] - y[:-1])
     deltaT = (t[1:] - t[:-1])
-    mean_vAP = np.mean(deltaX/deltaT)
-    mean_vML = np.mean(deltaY/deltaT)
+    mean_vAP = np.mean(deltaY/deltaT)
+    mean_vML = np.mean(deltaX/deltaT)
     valueCOP = [np.average(x), np.average(y)]
-    lengthAP = np.sum(abs(deltaX))
-    lengthML = np.sum(abs(deltaY))
+    lengthAP = np.sum(abs(deltaY))
+    lengthML = np.sum(abs(deltaX))
     folder = os.path.abspath('../') + '/Data/Results/'
     stillFile = open(folder + "Analysis_results.txt", 'a')
     stillFile.write("Data for standing still with " +
@@ -220,23 +220,18 @@ def analysisStatic(measur, path4romberg=None):
 
     # Plot COP wander path
     plt.plot(x, y, 'o-')
+    plt.plot(0, 0, 'om')
     filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
     plt.title(filename[:-4])
+    axis = 1 + max(maxSwayAP, maxSwayML)
+    plt.axis([-axis, axis, -axis, axis])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
     plt.close()
 
     # Plot COP_x(t)
     plt.plot(t, x, 'o-', label='x')
-    '''
-    filename = measur.title + '_' + measur.tagData.title + '_XinTime.png'
-    plt.title(filename[:-4])
-    plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
-    # plt.show()
-    plt.close()
-
     # Plot COP_y(t)
-    '''
     plt.plot(t, y, 'o-', label='y')
     filename = measur.title + '_' + measur.tagData.title + '_inTime.png'
     plt.title(filename[:-4])
@@ -310,7 +305,8 @@ def analysisSway(measur, COP):
     swayX_max = np.zeros(dimData)
     swayY_max = np.zeros(dimData)
     # print(type(raw_data_Sway[0][0]) is np.float64)
-    print(type(raw_data_Sway))
+    # print(type(raw_data_Sway))
+    ''' HERE LOOK FOR SOLUTION'''
     print(type(raw_data_Sway[0]))
     print(type(raw_data_Sway[0][0]))
     # print(raw_data_Sway)
@@ -319,16 +315,20 @@ def analysisSway(measur, COP):
         x = raw_data_Sway[1]
         y = raw_data_Sway[2]
         plt.plot(x, y)
-    else:
-        print(len(raw_data_Sway))
+        plt.plot(0, 0, 'm+', markersize=3)
+    elif type(raw_data_Sway[0][0]) is np.ndarray:
+        # print(len(raw_data_Sway))
         for i in range(0, len(raw_data_Sway)):
             t[i] = raw_data_Sway[i][0]
             x[i] = raw_data_Sway[i][1] - COP[0]
             y[i] = raw_data_Sway[i][2] - COP[1]
             # convert time to relative time
             plt.plot(x[i], y[i])
+            plt.plot(0, 0, 'm+', markersize=3)
             swayX_max[i] = max(abs(x[i]))
             swayY_max[i] = max(abs(y[i]))
+            xSway_max = max(swayX_max)
+            ySway_max = max(swayY_max)
             # Correct for COP
     # swayX_max -= COP[0]
     # swayY_max -= COP[1]
@@ -336,22 +336,24 @@ def analysisSway(measur, COP):
     # Print to file
     folder = os.path.abspath('../') + '/Data/Results/'
     stillFile = open(folder + 'Analysis_results.txt', 'a')
-    for i in range(0, len(swayX_max)):
-        stillFile.write("Data for " + measur.title +
-                        measur.tagData.title + '\n')
-        stillFile.write("----------------------------------------"*2 + '\n')
-        stillFile.write('\n')
-        stillFile.write('\n')
-        stillFile.write("Maximal Sway in AP plane: " + str(swayX_max[i]) +
-                        " cm" + '\n')
-        stillFile.write("Maximal Sway in ML plane: " + str(swayY_max[i]) +
-                        " cm" + '\n')
-        stillFile.write("========================================"*2 + '\n')
-        stillFile.write('\n')
+    # for i in range(0, len(swayX_max)):
+    stillFile.write("Data for " + measur.title +
+                    measur.tagData.title + '\n')
+    stillFile.write("----------------------------------------"*2 + '\n')
+    stillFile.write('\n')
+    stillFile.write('\n')
+    stillFile.write("Maximal Sway in AP plane: " + str(xSway_max) +
+                    " cm" + '\n')
+    stillFile.write("Maximal Sway in ML plane: " + str(ySway_max) +
+                    " cm" + '\n')
+    stillFile.write("========================================"*2 + '\n')
+    stillFile.write('\n')
 
     # Plot for COP wandering path
     filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
     plt.title(filename[:-4])
+    axis = 1 + max(xSway_max, ySway_max)
+    plt.axis([-axis, axis, -axis, axis])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
     plt.close()
@@ -361,7 +363,7 @@ def analysisSway(measur, COP):
         plt.plot(t, x)  # -COP[0])
     else:
         for dataSet in raw_data_Sway:
-            plt.plot(dataSet[0], dataSet[1]-COP[0])
+            plt.plot(dataSet[0], dataSet[1]-COP[0], '*-')
     filename = measur.title + '_' + measur.tagData.title + '_Xontime.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename)  # , dpi=300, bbox_inches='tight')
@@ -373,9 +375,10 @@ def analysisSway(measur, COP):
         plt.plot(t, y)  # -COP[1])
     else:
         for dataSet in raw_data_Sway:
-            plt.plot(dataSet[0], dataSet[2]-COP[1])
+            plt.plot(dataSet[0], dataSet[2]-COP[1], '*-')
     filename = measur.title + '_' + measur.tagData.title + '_Yontime.png'
     plt.title(filename[:-4])
+    plt.legend(loc=1)
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
     plt.clf()
@@ -392,15 +395,21 @@ def analysisSwayGame(measur, COP):
     raw_data = file2data(measur.fileName,
                          measur.tagData.tags)
     folder = os.path.abspath('../') + '/Data/Results/'
+    axis = 0
     for direction, values in raw_data.items():
+        xMax = max(abs(values[1]))
+        yMax = max(abs(values[2]))
         print(direction + '""""""""""""""""""""""""""""""""""')
-        print('Max X: ' + str(max(values[1])))
-        print('Max Y: ' + str(max(values[2])))
+        print('Max X: ' + str(xMax))
+        print('Max Y: ' + str(yMax))
         print(direction + '""""""""""""""""""""""""""""""""""' + '\n')
         plt.plot(values[1], values[2], label=direction)
         filename = measur.title + '_' + measur.tagData.title + '_' + \
             direction + '_XYpath.png'
         plt.title(filename[:-4])
+        if axis < xMax or axis < yMax :
+            axis = max(xMax, yMax) + 1
+        plt.axis([-axis, axis, -axis, axis])
         plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
         '''
         plt.show()
@@ -444,7 +453,7 @@ def initialiseData():
     allTheFiles[4] += "sway_right"
     allTheFiles[5] += "sway_with_feedback"
     allTheFiles[6] += "sway_stay_with_feedback"
-    measurementList = np.ndarray(13, dtype=object)
+    measurementList = np.ndarray(12, dtype=object)
     measurementList[0] = Measurement("Static_Measurement", allTheFiles[0],
                                      TagObject("Eyes_open",
                                                "ss_start", "ss_stop"))
@@ -472,13 +481,13 @@ def initialiseData():
                                                "stop_fast"))
     measurementList[9] = Measurement("Sway_Right", allTheFiles[4],
                                      TagObject("Stay", "start", "stop"))
-    '''
-    measurementList[10] = Measurement("Feeback Measurement", allTheFiles[5],
-                                      TagObject("Baseline", "baseline_start",
-                                                "baseline_stop"))
-                                                '''
     measurementList[10] = Measurement("Feeback Measurement", allTheFiles[5],
                                       TagObject("Fast", "", ""))
     measurementList[11] = Measurement("Feeback Measurement", allTheFiles[6],
                                       TagObject("Stay", "start_1", "finish"))
     return measurementList
+    '''
+    measurementList[10] = Measurement("Feeback Measurement", allTheFiles[5],
+                                      TagObject("Baseline", "baseline_start",
+                                                "baseline_stop"))
+                                                '''

@@ -14,12 +14,14 @@ calibrationCOP = valuesWanted[0]
 # Static Eyes Closed
 analysisStatic(measurementList[1], valuesWanted[1])
 
-'''
 # Analyse Sways
-for measurement in measurementList[10:]:
+'''
+for measurement in measurementList[2:10]:
     # measurement = measurementList[12]
     print(measurement.title)
     print(measurement.tagData.title)
+    print('\n\n')
+
     analysisSway(measurement, calibrationCOP)
     '''
 analysisSwayGame(measurementList[11], valuesWanted[1])
