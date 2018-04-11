@@ -4589,3 +4589,35 @@ Romberg coefficient for X: 0.101207171374
 Romberg coefficient for Y: 0.101207171374
 ****************************************
 
+Data for standing still with Eyes_open
+--------------------------------------------------------------------------------
+
+
+Maximal Sway in AP plane: 2.3351552795 cm
+Maximal Sway in ML plane: 0.686554204912 cm
+Mean Velocity in AP plane: 0.0244032790225 cm/s
+Mean Velocity in ML plane: -0.000218664249145 cm/s
+Path Length in AP plane: 6.73003358462 cm
+Path Length in ML plane: 4.92739521597 cm
+Path Length in ML plane: 4.92739521597 cm
+================================================================================
+
+Data for standing still with Eyes_closed
+--------------------------------------------------------------------------------
+
+
+Maximal Sway in AP plane: 3.39418416801 cm
+Maximal Sway in ML plane: 0.257590841215 cm
+Mean Velocity in AP plane: 0.0293851024057 cm/s
+Mean Velocity in ML plane: 0.000584840604182 cm/s
+Path Length in AP plane: 5.492977234 cm
+Path Length in ML plane: 1.26073821818 cm
+Path Length in ML plane: 1.26073821818 cm
+================================================================================
+
+****************************************
+Romberg coefficient for sum: 0.266344844247
+Romberg coefficient for X: 0.101207171374
+Romberg coefficient for Y: 0.101207171374
+****************************************
+
