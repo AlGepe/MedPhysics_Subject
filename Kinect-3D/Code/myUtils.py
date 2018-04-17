@@ -60,6 +60,8 @@ def commonBegining(oneJoint):
 
 
 # Returns the position in the array of the PF point
+# PF [peak flexion] is defined here as the point of minimum distance between
+# the foot and the knee
 def getPFindex(rKnee, lKnee, rFoot, lFoot):
     # peak flexion/ maximum squatting
     rSide = rKnee - rFoot
@@ -81,6 +83,9 @@ def getPFindex(rKnee, lKnee, rFoot, lFoot):
             return np.argmin(distAround_rPf) + (rPf - radius)
 
 
+# def getJumpStart(
+
+
 # Returns the position in the array of the CI point
 def getCIindex(jointNp):
     # Contact point
@@ -96,7 +101,7 @@ def getRightKnee(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftKnee(joints):
@@ -108,7 +113,7 @@ def getLeftKnee(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getRightFoot(joints):
@@ -120,7 +125,7 @@ def getRightFoot(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftFoot(joints):
@@ -132,7 +137,7 @@ def getLeftFoot(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftHip(joints):
@@ -144,7 +149,7 @@ def getLeftHip(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getRightHip(joints):
@@ -156,7 +161,7 @@ def getRightHip(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getTorso(joints):
@@ -168,7 +173,7 @@ def getTorso(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftHand(joints):
@@ -180,7 +185,7 @@ def getLeftHand(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getRightHand(joints):
@@ -192,7 +197,7 @@ def getRightHand(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftElbow(joints):
@@ -204,7 +209,7 @@ def getLeftElbow(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getRightElbow(joints):
@@ -216,7 +221,7 @@ def getRightElbow(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getLeftShoulder(joints):
@@ -228,7 +233,7 @@ def getLeftShoulder(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getRightShoulder(joints):
@@ -240,7 +245,7 @@ def getRightShoulder(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getNeck(joints):
@@ -252,7 +257,7 @@ def getNeck(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 def getHead(joints):
@@ -264,7 +269,7 @@ def getHead(joints):
         thisJoint[0][i] = joints[i][jointPos].x
         thisJoint[1][i] = joints[i][jointPos].y
         thisJoint[2][i] = joints[i][jointPos].z
-    return commonBegining(thisJoint)
+    return thisJoint
 
 
 # Z is depth (from-to camera)
