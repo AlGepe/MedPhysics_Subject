@@ -60,9 +60,25 @@ def commonBegining(oneJoint):
 
 
 # Returns the position in the array of the PF point
-def getPFindex(jointNp):
+def getPFindex(rKnee, lKnee, rFoot, lFoot):
     # peak flexion/ maximum squatting
-    return np.argmin(jointNp, axis=1)
+    rSide = rKnee - rFoot
+    lSide = lKnee - lFoot
+    rPf = np.argmin(rSide, axis=1)
+    lPf = np.argmin(lSide, axis=1)
+    if (rPf == lPf):
+        return rPf
+    else:
+        radius = 5
+        distAround_rPf = rSide[rPf-radius:rPf+radius] + \
+                         lSide[rPf-radius:rPf+radius]
+        distAround_lPf = rSide[lPf-radius:lPf+radius] + \
+                         lSide[lPf-radius:lPf+radius]
+
+        if(min(distAround_lPf) < min(distAround_rPf)):  # lPf is the best PF
+            return np.argmin(distAround_lPf) + (lPf - radius)
+        else:  # rPf is the best PF or they are both equal
+            return np.argmin(distAround_rPf) + (rPf - radius)
 
 
 # Returns the position in the array of the CI point
