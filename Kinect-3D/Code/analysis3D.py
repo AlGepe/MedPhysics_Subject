@@ -1,7 +1,7 @@
 import os.path
 from myUtils import *
-# import matplotlib
-# matplotlib.use('pdf')
+import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 
 
@@ -15,7 +15,9 @@ plt.plot(time, rFoot[1], 'g', label='Right Foot')
 plt.plot(time, rKnee[1], 'r', label='Knee')
 plt.plot(time, lFoot[1], 'b', label='Left Foot')
 plt.legend(loc='best')
-plt.show()
+name = 'Feet_1knee_visualCI-PF'
+plt.title(name)
+plt.savefig(name + '.png')
 '''
 rKnee = getRightKnee(joints)
 time = time[-len(rKnee[0]):]
