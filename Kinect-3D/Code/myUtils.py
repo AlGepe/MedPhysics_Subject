@@ -55,7 +55,15 @@ def commonBegining(oneJoint):
         else:
             trimJoint = np.ndarray(shape=(3, len(oneJoint[0])-starts[0]))
             for i in range(3):
-                trimJoint[i] = oneJoint[i][starts[0]:] - oneJoint[i][starts[0]]
+                trimJoint[i] = oneJoint[i][starts[0]:] # - oneJoint[i][starts[0]]
+    return trimJoint
+
+
+def meaningFullOnly(oneJoint, t0):
+    start = int(t0 * 33)
+    trimJoint = np.ndarray(shape=(3, len(oneJoint[0])-start))
+    for i in range(3):
+        trimJoint[i] = oneJoint[i][start:]  # - oneJoint[i][starts[0]]
     return trimJoint
 
 
@@ -64,10 +72,11 @@ def commonBegining(oneJoint):
 # the foot and the knee
 def getPFindex(rKnee, lKnee, rFoot, lFoot):
     # peak flexion/ maximum squatting
-    rSide = rKnee - rFoot
-    lSide = lKnee - lFoot
-    rPf = np.argmin(rSide, axis=1)
-    lPf = np.argmin(lSide, axis=1)
+    # Check only on Y axis (vertical)
+    rSide = abs(abs(rKnee[1]) - abs(rFoot[1]))
+    lSide = abs(abs(lKnee[1]) - abs(lFoot[1]))
+    rPf = np.argmin(rSide)  # , axis=1)
+    lPf = np.argmin(lSide)  # , axis=1)
     if (rPf == lPf):
         return rPf
     else:
