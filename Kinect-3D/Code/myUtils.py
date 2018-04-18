@@ -59,7 +59,7 @@ def commonBegining(oneJoint):
     return trimJoint
 
 
-def meaningFullOnly(oneJoint, t0):
+def meaningFullOnly(oneJoint, t0=3.5):
     start = int(t0 * 33)
     trimJoint = np.ndarray(shape=(3, len(oneJoint[0])-start))
     for i in range(3):
@@ -92,7 +92,23 @@ def getPFindex(rKnee, lKnee, rFoot, lFoot):
             return np.argmin(distAround_rPf) + (rPf - radius)
 
 
-# def getJumpStart(
+def getRealDiff(jointOne, jointTwo):
+    return abs(abs(jointOne) - abs(jointTwo))
+
+def getJumpStart(torso, foot, numJumps=4):
+    jumpsStart = np.zeros(numJumps, dtype=int)
+    jointDiff = getRealDiff(torso, foot)[1]
+    trigger = max(jointDiff) - .05 * max(jointDiff)
+    i = 0
+    j = 0
+    while j < numJumps and i < len(jointDiff):
+        if jointDiff[i] >= trigger:
+            jumpsStart[j] = i - 33
+            j += 1
+            i += 100
+        i += 1
+    return jumpsStart
+
 
 
 # Returns the position in the array of the CI point
