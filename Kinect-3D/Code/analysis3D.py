@@ -126,10 +126,8 @@ plt.plot(time, fnc.commonBegining(rHip)[1], label='Right Hip')
 plt.legend(loc='best')
 plt.title(name)
 plt.savefig(name+'.png', dpi=myDPI)
-#plt.show()
+# plt.show()
 plt.close()
-
-
 
 ########
 # Calculate PF for each jump and valgus analysis
