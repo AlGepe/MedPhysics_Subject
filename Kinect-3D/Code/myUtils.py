@@ -47,15 +47,15 @@ def commonBegining(oneJoint):
         while oneJoint[i][j] == 0:
             j += 1
         starts[i] = j
-        if np.any(starts - starts[0]):
-            oneJoint[0] = oneJoint[0] - oneJoint[0][starts[0]]
-            oneJoint[1] = oneJoint[1] - oneJoint[1][starts[1]]
-            oneJoint[2] = oneJoint[2] - oneJoint[2][starts[2]]
-            trimJoint = oneJoint
-        else:
-            trimJoint = np.ndarray(shape=(3, len(oneJoint[0])-starts[0]))
-            for i in range(3):
-                trimJoint[i] = oneJoint[i][starts[0]:] # - oneJoint[i][starts[0]]
+    if np.any(starts - starts[0]):
+        oneJoint[0] = oneJoint[0] - oneJoint[0][starts[0]]
+        oneJoint[1] = oneJoint[1] - oneJoint[1][starts[1]]
+        oneJoint[2] = oneJoint[2] - oneJoint[2][starts[2]]
+        trimJoint = oneJoint
+    else:
+        trimJoint = np.ndarray(shape=(3, len(oneJoint[0])-starts[0]))
+        for k in range(3):
+            trimJoint[k] = oneJoint[k][starts[0]:] - oneJoint[k][starts[0]]
     return trimJoint
 
 
@@ -71,29 +71,37 @@ def meaningFullOnly(oneJoint, t0=3.5):
 # PF [peak flexion] is defined here as the point of minimum distance between
 # the foot and the knee
 def getPFindex(rKnee, lKnee, rFoot, lFoot):
+    print("in PF Function")
     # peak flexion/ maximum squatting
     # Check only on Y axis (vertical)
     rSide = abs(abs(rKnee[1]) - abs(rFoot[1]))
     lSide = abs(abs(lKnee[1]) - abs(lFoot[1]))
     rPf = np.argmin(rSide)  # , axis=1)
     lPf = np.argmin(lSide)  # , axis=1)
+    print("Len of rSide {0}".format(len(rSide)))
+    print("Len of lSide {0}".format(len(lSide)))
+    print(max(rPf, lPf))
     if (rPf == lPf):
+        print(rPf)
         return rPf
     else:
         radius = 5
-        distAround_rPf = rSide[rPf-radius:rPf+radius] + \
-                         lSide[rPf-radius:rPf+radius]
-        distAround_lPf = rSide[lPf-radius:lPf+radius] + \
-                         lSide[lPf-radius:lPf+radius]
+        distAround_rPf = (rSide[rPf-radius:rPf+radius] +
+                          lSide[rPf-radius:rPf+radius])
+        distAround_lPf = (rSide[lPf-radius:lPf+radius] +
+                          lSide[lPf-radius:lPf+radius])
 
         if(min(distAround_lPf) < min(distAround_rPf)):  # lPf is the best PF
+            print(np.argmax(distAround_lPf) + (lPf - radius))
             return np.argmin(distAround_lPf) + (lPf - radius)
         else:  # rPf is the best PF or they are both equal
+            print(np.argmax(distAround_rPf) + (rPf - radius))
             return np.argmin(distAround_rPf) + (rPf - radius)
 
 
 def getRealDiff(jointOne, jointTwo):
     return abs(abs(jointOne) - abs(jointTwo))
+
 
 def getJumpStart(torso, foot, numJumps=4):
     jumpsStart = np.zeros(numJumps, dtype=int)
@@ -109,6 +117,20 @@ def getJumpStart(torso, foot, numJumps=4):
         i += 1
     return jumpsStart
 
+
+def splitJumps(joint, starts, lenJump=75):
+    nJumps = len(starts)
+    nAxis = len(joint)
+    if type(joint[0]) is not np.ndarray:
+        splittedJoint = np.ndarray(shape=(nJumps), dtype=np.ndarray)
+        for i in range(nJumps):
+                splittedJoint[i] = joint[starts[i]:starts[i] + lenJump]
+    else:
+        splittedJoint = np.ndarray(shape=(nJumps, nAxis), dtype=np.ndarray)
+        for i in range(nJumps):
+            for j in range(nAxis):
+                splittedJoint[i][j] = joint[j][starts[i]:starts[i] + lenJump]
+    return splittedJoint
 
 
 # Returns the position in the array of the CI point

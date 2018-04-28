@@ -1,4 +1,6 @@
 import os.path
+import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 from obci_readmanager.signal_processing import read_manager as read
 import numpy as np
@@ -219,12 +221,14 @@ def analysisStatic(measur, path4romberg=None):
     stillFile.write("========================================"*2 + '\n'*2)
 
     # Plot COP wander path
-    plt.plot(x, y, 'o-')
-    plt.plot(0, 0, 'om')
+    plt.plot(x, y, '.-', markersize=2)
+    plt.plot(0, 0, '+m', markersize=10)
     filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
     plt.title(filename[:-4])
+    plt.xlabel('X_position / cm')
+    plt.ylabel('Y_position / cm')
     axis = 1 + max(maxSwayAP, maxSwayML)
-    plt.axis([-axis, axis, -axis, axis])
+    plt.axis([-axis+2, axis-2, -axis, 1])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
     plt.close()
@@ -234,6 +238,8 @@ def analysisStatic(measur, path4romberg=None):
     # Plot COP_y(t)
     plt.plot(t, y, 'o-', label='y')
     filename = measur.title + '_' + measur.tagData.title + '_inTime.png'
+    plt.xlabel('Time / s')
+    plt.ylabel('Position / cm')
     plt.title(filename[:-4])
     plt.legend(loc=1)
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
@@ -241,7 +247,8 @@ def analysisStatic(measur, path4romberg=None):
     plt.close()
 
     # Histogram of COP points
-    plt.hist2d(x, y)
+    plt.hist2d(x, y, bins=20)
+    plt.colorbar()
     filename = measur.title + '_' + measur.tagData.title + '_XYhisto.png'
     plt.title(filename[:-4])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
@@ -270,8 +277,8 @@ def analysisStatic(measur, path4romberg=None):
             (sum(path4romberg) + lengthAP + lengthML)
         rombergX = (path4romberg[0] - lengthAP) / \
             (path4romberg[0] + lengthAP)
-        rombergY = (path4romberg[0] - lengthAP) / \
-            (path4romberg[0] + lengthAP)
+        rombergY = (path4romberg[1] - lengthAP) / \
+            (path4romberg[1] + lengthAP)
         stillFile.write("****************************************" + '\n')
         stillFile.write("Romberg coefficient for sum: "
                         + str(rombergSum) + '\n')
@@ -303,17 +310,25 @@ def analysisSway(measur, COP):
     y = np.ndarray(shape=(dimData), dtype=np.ndarray)
     t = np.ndarray(shape=(dimData), dtype=np.ndarray)
     swayX_max = np.zeros(dimData)
+    swayX_min = np.zeros(dimData)
     swayY_max = np.zeros(dimData)
+    swayY_min = np.zeros(dimData)
     # print(type(raw_data_Sway[0][0]) is np.float64)
     # print(type(raw_data_Sway))
     ''' HERE LOOK FOR SOLUTION'''
-    print(type(raw_data_Sway[0]))
-    print(type(raw_data_Sway[0][0]))
+    # print(type(raw_data_Sway[0]))
+    # print(type(raw_data_Sway[0][0]))
     # print(raw_data_Sway)
     if type(raw_data_Sway[0][0]) is np.float64:
         t = raw_data_Sway[0]
         x = raw_data_Sway[1]
         y = raw_data_Sway[2]
+        print(raw_data_Sway.shape)
+        print(t)
+        xSway_max = max(x)
+        xSway_min = min(x)
+        ySway_max = max(y)
+        ySway_min = min(y)
         plt.plot(x, y)
         plt.plot(0, 0, 'm+', markersize=3)
     elif type(raw_data_Sway[0][0]) is np.ndarray:
@@ -325,11 +340,15 @@ def analysisSway(measur, COP):
             # convert time to relative time
             plt.plot(x[i], y[i])
             plt.plot(0, 0, 'm+', markersize=3)
-            swayX_max[i] = max(abs(x[i]))
-            swayY_max[i] = max(abs(y[i]))
-            xSway_max = max(swayX_max)
-            ySway_max = max(swayY_max)
-            # Correct for COP
+            swayX_max[i] = max((x[i]))
+            swayX_min[i] = min((x[i]))
+            swayY_max[i] = max((y[i]))
+            swayY_min[i] = min((y[i]))
+        xSway_max = max(swayX_max)
+        ySway_max = max(swayY_max)
+        xSway_min = min(swayX_min)
+        ySway_min = min(swayY_min)
+        # Correct for COP
     # swayX_max -= COP[0]
     # swayY_max -= COP[1]
 
@@ -344,15 +363,21 @@ def analysisSway(measur, COP):
     stillFile.write('\n')
     stillFile.write("Maximal Sway in AP plane: " + str(xSway_max) +
                     " cm" + '\n')
+    stillFile.write("Minimal Sway in AP plane: " + str(xSway_min) +
+                    " cm" + '\n')
     stillFile.write("Maximal Sway in ML plane: " + str(ySway_max) +
+                    " cm" + '\n')
+    stillFile.write("Minimal Sway in ML plane: " + str(ySway_min) +
                     " cm" + '\n')
     stillFile.write("========================================"*2 + '\n')
     stillFile.write('\n')
 
     # Plot for COP wandering path
-    filename = measur.title + '_' + measur.tagData.title + '_XYpath.png'
+    filename = measur.title + '_' + measur.tagData.title + '_aXYpath.png'
     plt.title(filename[:-4])
-    axis = 1 + max(xSway_max, ySway_max)
+    plt.xlabel('X_position / cm')
+    plt.ylabel('Y_position / cm')
+    axis = 1 + max(xSway_max, ySway_max, -xSway_min, -ySway_min)
     plt.axis([-axis, axis, -axis, axis])
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
@@ -365,6 +390,8 @@ def analysisSway(measur, COP):
         for dataSet in raw_data_Sway:
             plt.plot(dataSet[0], dataSet[1]-COP[0], '*-')
     filename = measur.title + '_' + measur.tagData.title + '_Xontime.png'
+    plt.xlabel('Time / s')
+    plt.ylabel('X_position / cm')
     plt.title(filename[:-4])
     plt.savefig(folder + filename)  # , dpi=300, bbox_inches='tight')
     # plt.show()
@@ -378,6 +405,8 @@ def analysisSway(measur, COP):
             plt.plot(dataSet[0], dataSet[2]-COP[1], '*-')
     filename = measur.title + '_' + measur.tagData.title + '_Yontime.png'
     plt.title(filename[:-4])
+    plt.xlabel('Time / s')
+    plt.ylabel('Y_position / cm')
     plt.legend(loc=1)
     plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
     # plt.show()
@@ -397,21 +426,39 @@ def analysisSwayGame(measur, COP):
     folder = os.path.abspath('../') + '/Data/Results/'
     axis = 0
     for direction, values in raw_data.items():
-        xMax = max(abs(values[1]))
-        yMax = max(abs(values[2]))
+        xMax = max((values[1]))
+        yMax = max((values[2]))
+        xMin = min(values[1])
+        yMin = min(values[2])
         print(direction + '""""""""""""""""""""""""""""""""""')
         print('Max X: ' + str(xMax))
+        print('Min X: ' + str(xMin))
         print('Max Y: ' + str(yMax))
+        print('Min Y: ' + str(yMin))
         print(direction + '""""""""""""""""""""""""""""""""""' + '\n')
-        plt.plot(values[1], values[2], label=direction)
-        filename = measur.title + '_' + measur.tagData.title + '_' + \
-            direction + '_XYpath.png'
-        plt.title(filename[:-4])
+        figXY = plt.figure(0)
+        figX = plt.figure(1)
+        figY = plt.figure(2)
+        xyPlot = figXY.add_subplot(111)
+        xPlot = figX.add_subplot(111)
+        yPlot = figY.add_subplot(111)
+        xyPlot.plot(0, 0, '+m', markersize=5)
+        xPlot.plot(0, 0, '+m', markersize=5)
+        yPlot.plot(0, 0, '+m', markersize=5)
+        xyPlot.plot(values[1], values[2], label=direction)
+        xPlot.plot(values[0], values[1], label=direction)
+        yPlot.plot(values[0], values[2], label=direction)
+        # filename = measur.title + '_' + measur.tagData.title + '_' + \
+            # direction + '_XYpath.png'
+        # xyPlot.title(filename[:-4])
+        xMax = max(xMax, -xMin)
+        yMax = max(yMax, -yMin)
         if axis < xMax or axis < yMax :
             axis = max(xMax, yMax) + 1
-        plt.axis([-axis, axis, -axis, axis])
-        plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
         '''
+        xyPlot.savefig(folder + filename, dpi=300, bbox_inches='tight')
+        xPlot.savefig(folder + filenameX, dpi=300, bbox_inches='tight')
+        yPlot.savefig(folder + filenameY, dpi=300, bbox_inches='tight')
         plt.show()
         plt.close()
         plt.plot(values[0], values[1])
@@ -427,9 +474,37 @@ def analysisSwayGame(measur, COP):
         plt.title(filename[:-4])
         plt.savefig(folder + filename, dpi=300, bbox_inches='tight')
         '''
-    plt.legend(loc=4)
-    plt.show()
-    plt.close()
+    xyPlot.legend(loc='best')
+    xPlot.legend(loc='best')
+    yPlot.legend(loc='best')
+    filename = measur.title + '_' + measur.tagData.title + '_' + \
+        'BEST_XYpath.png'
+    filenameY = measur.title + '_' + measur.tagData.title + '_' + \
+        'BEST_Ypath.png'
+    filenameX = measur.title + '_' + measur.tagData.title + '_' + \
+        'BEST_Xpath.png'
+    plt.figure(1)
+    plt.ylabel('X_position / cm')
+    plt.xlabel('Time / s')
+    plt.title(filenameX[:-4])
+    xPlot.axis([0, max(values[0]), -axis, axis])
+    figX.savefig(folder + filenameX, dpi=300, bbox_inches='tight')
+    print(axis) 
+    plt.figure(2)
+    plt.ylabel('Y_position / cm')
+    plt.xlabel('Time / s')
+    plt.title(filenameY[:-4])
+    yPlot.axis([0, max(values[0]), -axis, axis])
+    figY.savefig(folder + filenameY, dpi=300, bbox_inches='tight')
+
+    plt.figure(0)
+    plt.ylabel('Y_position / cm')
+    plt.xlabel('X_position / cm')
+    plt.title(filename[:-4])
+    xyPlot.axis([-axis, axis, -axis, axis])
+    figXY.savefig(folder + filename, dpi=300, bbox_inches='tight')
+    # plt.show()
+    # plt.close()
 
 ###############################################################################
 # Initialise the data according to the filename existing in '../Data/' folder

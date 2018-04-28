@@ -1,9 +1,10 @@
 # import os.path
 from utils import analysisStatic, analysisSwayGame, \
     initialiseData, analysisSway  # , Measurement, TagObject, file2data,
-# import numpy as np
-# import matplotlib.pyplot as plt
-
+import numpy as np
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
 
 measurementList = initialiseData()
 
@@ -24,11 +25,13 @@ for measurement in measurementList[2:10]:
 
     analysisSway(measurement, calibrationCOP)
     '''
+analysisSway(measurementList[10], valuesWanted[1])
 analysisSwayGame(measurementList[11], valuesWanted[1])
 
 # Graphs of motion in AP, ML and AP/ML
 # Histogram of COP points
 '''
+
 for measurement in measurementList:
     currentData = file2data(measurement.fileName, measurement.tagData.tags)
     # create a subplot
