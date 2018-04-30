@@ -71,18 +71,13 @@ def meaningFullOnly(oneJoint, t0=3.5):
 # PF [peak flexion] is defined here as the point of minimum distance between
 # the foot and the knee
 def getPFindex(rKnee, lKnee, rFoot, lFoot):
-    print("in PF Function")
     # peak flexion/ maximum squatting
     # Check only on Y axis (vertical)
     rSide = abs(abs(rKnee[1]) - abs(rFoot[1]))
     lSide = abs(abs(lKnee[1]) - abs(lFoot[1]))
     rPf = np.argmin(rSide)  # , axis=1)
     lPf = np.argmin(lSide)  # , axis=1)
-    print("Len of rSide {0}".format(len(rSide)))
-    print("Len of lSide {0}".format(len(lSide)))
-    print(max(rPf, lPf))
     if (rPf == lPf):
-        print(rPf)
         return rPf
     else:
         radius = 5
@@ -92,10 +87,8 @@ def getPFindex(rKnee, lKnee, rFoot, lFoot):
                           lSide[lPf-radius:lPf+radius])
 
         if(min(distAround_lPf) < min(distAround_rPf)):  # lPf is the best PF
-            print(np.argmax(distAround_lPf) + (lPf - radius))
             return np.argmin(distAround_lPf) + (lPf - radius)
         else:  # rPf is the best PF or they are both equal
-            print(np.argmax(distAround_rPf) + (rPf - radius))
             return np.argmin(distAround_rPf) + (rPf - radius)
 
 
@@ -134,9 +127,32 @@ def splitJumps(joint, starts, lenJump=75):
 
 
 # Returns the position in the array of the CI point
-def getCIindex(jointNp):
-    # Contact point
-    return np.argmin(jointNp, axis=1)
+def getCIindex(rFoot, lFoot):
+    # Code find the lowest knee point (~PF) and thensearches for the lowest
+    # foot position
+    high = [np.argmax(rFoot[1]), np.argmax(lFoot[1])]
+    rSide = np.diff(rFoot[1][high[0]:high[0] + 30])
+    lSide = np.diff(lFoot[1][high[1]:high[1] + 30])
+    rPf = np.argmin(rSide)  # , axis=1)
+    lPf = np.argmin(lSide)  # , axis=1)
+    print("Len of rSide {0}".format(len(rSide)))
+    print("Len of lSide {0}".format(len(lSide)))
+    print(max(rPf, lPf))
+    if (rPf == lPf):
+        return rPf + high[0]
+    else:
+        radius = 5
+        distAround_rPf = (rSide[rPf-radius:rPf+radius] +
+                          lSide[rPf-radius:rPf+radius])
+        distAround_lPf = (rSide[lPf-radius:lPf+radius] +
+                          lSide[lPf-radius:lPf+radius])
+
+        if(min(distAround_lPf) < min(distAround_rPf)):  # lPf is the best PF
+            print(np.argmin(distAround_lPf) + (lPf - radius) + high[1])
+            return np.argmin(distAround_lPf) + (lPf - radius + high[1])
+        else:  # rPf is the best PF or they are both equal
+            print(np.argmin(distAround_rPf) + (rPf - radius) + high[0])
+            return np.argmin(distAround_rPf) + (rPf - radius + high[0])
 
 
 def getRightKnee(joints):

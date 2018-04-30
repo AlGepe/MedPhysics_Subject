@@ -4,6 +4,8 @@ import numpy as np
 # import matplotlib
 # matplotlib.use('pdf')
 import matplotlib.pyplot as plt
+folder = os.path.abspath('../') + '/Data/Results/'
+
 
 myDPI = 100
 
@@ -86,14 +88,14 @@ plt.legend(loc='best')
 plt.xlabel('Time / s')
 name = "All_data_Y-axis"
 plt.title(name)
-plt.savefig(name+'.png', dpi=myDPI)
+plt.savefig(folder + name+'.png', dpi=myDPI)
 # plt.show()
 # PLOT ONE JUMP
 plt.axis([13, 18, -800, 1050])
 plt.legend(loc='upper left')
 name += '_One_Jump'
 plt.title(name)
-plt.savefig(name+'.png', dpi=myDPI)
+plt.savefig(folder + name+'.png', dpi=myDPI)
 #plt.show()
 plt.close()
 
@@ -102,7 +104,7 @@ plt.plot(time, head[1], label='Head')
 plt.xlabel('Time / s')
 name = "Head_Y-Axis"
 plt.title(name)
-plt.savefig(name+'.png')
+plt.savefig(folder + name+'.png', dpi=myDPI)
 
 # PLOT HEAD w/ KNEE AND FOOT
 plt.plot(time, rKnee[1], label='Right Knee')
@@ -110,7 +112,7 @@ plt.plot(time, rFoot[1], label='Right Foot')
 plt.legend(loc='upper left')
 name = "Y-Axis_compare_Head_Knee_Foot_one_side"
 plt.title(name)
-plt.savefig(name+'.png', dpi=myDPI)
+plt.savefig(folder + name+'.png', dpi=myDPI)
 # plt.show()
 plt.close()
 
@@ -125,7 +127,7 @@ plt.plot(time, fnc.commonBegining(rKnee)[1], label='Right Knee')
 plt.plot(time, fnc.commonBegining(rHip)[1], label='Right Hip')
 plt.legend(loc='best')
 plt.title(name)
-plt.savefig(name+'.png', dpi=myDPI)
+plt.savefig(folder + name+'.png', dpi=myDPI)
 # plt.show()
 plt.close()
 
@@ -141,18 +143,25 @@ rFoot_cut = fnc.splitJumps(rFoot, separator)
 lFoot_cut = fnc.splitJumps(lFoot, separator)
 time_cut = fnc.splitJumps(time, separator)
 for i in range(len(separator)):
+    ciPoint = fnc.getCIindex(rFoot_cut[i], lFoot_cut[i])
     pfPoint = fnc.getPFindex(rKnee_cut[i], lKnee_cut[i], rFoot_cut[i],
                              lFoot_cut[i])
-    print('in main file pfReturned is: {0}'.format(pfPoint))
-    plt.plot(time_cut[i], rKnee_cut[i][1], 'b')
+    print('in main file ciReturned is: {0}'.format(ciPoint))
+    plt.plot(time_cut[i], rKnee_cut[i][1], 'm')
     plt.plot(time_cut[i], lKnee_cut[i][1], 'r')
     plt.plot(time_cut[i], rFoot_cut[i][1], 'g')
     plt.plot(time_cut[i], lFoot_cut[i][1], 'k')
+    plt.plot(np.full(100, time_cut[i][ciPoint]), np.linspace(-1000, 1000, 100),
+             'y-', label='CI')
     plt.plot(np.full(100, time_cut[i][pfPoint]), np.linspace(-1000, 1000, 100),
              'g-', label='PfKNEE')
+plt.legend(loc='best')
 plt.show()
 
 
+########
+# Calculate CI for each jump and valgus analysis
+########
 
 '''
 
