@@ -104,7 +104,7 @@ def getJumpStart(torso, foot, numJumps=4):
     j = 0
     while j < numJumps and i < len(jointDiff):
         if jointDiff[i] >= trigger:
-            jumpsStart[j] = i - 33
+            jumpsStart[j] = i - 20
             j += 1
             i += 100
         i += 1
@@ -126,33 +126,61 @@ def splitJumps(joint, starts, lenJump=75):
     return splittedJoint
 
 
-# Returns the position in the array of the CI point
-def getCIindex(rFoot, lFoot):
-    # Code find the lowest knee point (~PF) and thensearches for the lowest
-    # foot position
-    high = [np.argmax(rFoot[1]), np.argmax(lFoot[1])]
-    rSide = np.diff(rFoot[1][high[0]:high[0] + 30])
-    lSide = np.diff(lFoot[1][high[1]:high[1] + 30])
-    rPf = np.argmin(rSide)  # , axis=1)
-    lPf = np.argmin(lSide)  # , axis=1)
-    print("Len of rSide {0}".format(len(rSide)))
-    print("Len of lSide {0}".format(len(lSide)))
-    print(max(rPf, lPf))
-    if (rPf == lPf):
-        return rPf + high[0]
-    else:
-        radius = 5
-        distAround_rPf = (rSide[rPf-radius:rPf+radius] +
-                          lSide[rPf-radius:rPf+radius])
-        distAround_lPf = (rSide[lPf-radius:lPf+radius] +
-                          lSide[lPf-radius:lPf+radius])
+def lowPassJoint(jointNp):
+    jointRC = np.zeros(shape=(len(jointNp), len(jointNp[0])))
+    print(jointNp.shape)
+    for j in range(jointNp.shape[0]):
+        for i in range(len(jointNp[0])-1):
+            # print(i)
+            jointRC[j][i+1] = (jointNp[j][i] + jointNp[j][i+1])/2
+    return jointRC
 
-        if(min(distAround_lPf) < min(distAround_rPf)):  # lPf is the best PF
-            print(np.argmin(distAround_lPf) + (lPf - radius) + high[1])
-            return np.argmin(distAround_lPf) + (lPf - radius + high[1])
-        else:  # rPf is the best PF or they are both equal
-            print(np.argmin(distAround_rPf) + (rPf - radius) + high[0])
-            return np.argmin(distAround_rPf) + (rPf - radius + high[0])
+
+def getKVM(knee_x, ic, pf):
+    return abs(knee_x[ic] - knee_x[pf])
+
+
+def getKASR(rKnee_x, lKnee_x, rFoot_x, lFoot_x, pf):
+    xKR = rKnee_x[pf]
+    xKL = lKnee_x[pf]
+    xFR = rFoot_x[pf]
+    xFL = lFoot_x[pf]
+    return (abs(xKR - xKL) / abs(xFR-xFL))
+
+
+def getFPKA(knee, foot, point):
+
+    u = [0, foot[1][point] - knee[1][point]]
+    v = [foot[0][point] - knee[0][point], foot[1][point] - knee[1][point]]
+
+    u /= np.linalg.norm(u)
+    v /= np.linalg.norm(v)
+    prod = sum(u*v)
+
+    return np.arccos(prod)
+
+
+def getICindex(rFoot, lFoot):
+    # highest point in the jump
+    high = max([np.argmax(rFoot[1]), np.argmax(lFoot[1])])
+    # highest point second jump
+    # return high+10
+    rebound = max([np.argmax(rFoot[1][high+15:]), np.argmax(lFoot[1][high+15:])])
+    # convert to absolute position
+    rebound += high+10
+
+    diff_l = np.diff(lFoot[1])
+    diff_r = np.diff(rFoot[1])
+
+    minPoint = int(np.argmin(rFoot[1][:rebound]) +
+                   np.argmin(lFoot[1][:rebound]) / 2)
+    threshold = min([min(diff_r[high-4:high+2]), min(diff_l[high-4:high+2])])
+    startLooking = np.argmax(abs(diff_l[high:rebound])) + high
+    for i in range(startLooking, minPoint):
+        if diff_r[i] > threshold or diff_l[i] > threshold:
+            return i + 1
+
+    return minPoint - 1
 
 
 def getRightKnee(joints):
@@ -336,4 +364,4 @@ def getHead(joints):
 
 
 # Z is depth (from-to camera)
-# Y is heigh
+# Y is heigth
