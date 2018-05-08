@@ -67,6 +67,22 @@ def meaningFullOnly(oneJoint, t0=3.5):
     return trimJoint
 
 
+def footCorrection(rFoot, lFoot, pos):
+    return np.average(((rFoot[1][pos[0]:pos[1]] + lFoot[1][pos[0]:pos[1]])/2))
+
+
+def getConversion(head, rFoot, lFoot, positions):
+    height = head[1] - ((rFoot[1] + lFoot[1])/2)
+    aver = np.average(height[positions[0]:positions[1]])
+    return 175./aver
+
+
+def convert2cm(joint, conversion, footCorr):
+    for i in range(len(joint)):
+        joint[i] = (joint[i]-footCorr) * conversion
+    return joint
+
+
 # Returns the position in the array of the PF point
 # PF [peak flexion] is defined here as the point of minimum distance between
 # the foot and the knee
@@ -80,6 +96,11 @@ def getPFindex(rKnee, lKnee, rFoot, lFoot):
     if (rPf == lPf):
         return rPf
     else:
+        if rPf < 5:
+            rPf = 5
+        if lPf < 5:
+            lPf = 5
+
         radius = 5
         distAround_rPf = (rSide[rPf-radius:rPf+radius] +
                           lSide[rPf-radius:rPf+radius])
@@ -104,14 +125,14 @@ def getJumpStart(torso, foot, numJumps=4):
     j = 0
     while j < numJumps and i < len(jointDiff):
         if jointDiff[i] >= trigger:
-            jumpsStart[j] = i - 20
+            jumpsStart[j] = i - 25
             j += 1
             i += 100
         i += 1
     return jumpsStart
 
 
-def splitJumps(joint, starts, lenJump=75):
+def splitJumps(joint, starts, lenJump=60):
     nJumps = len(starts)
     nAxis = len(joint)
     if type(joint[0]) is not np.ndarray:
@@ -167,18 +188,24 @@ def getICindex(rFoot, lFoot):
     # return high+10
     rebound = max([np.argmax(rFoot[1][high+15:]), np.argmax(lFoot[1][high+15:])])
     # convert to absolute position
-    rebound += high+10
+    rebound += high+15
 
     diff_l = np.diff(lFoot[1])
     diff_r = np.diff(rFoot[1])
 
-    minPoint = int(np.argmin(rFoot[1][:rebound]) +
-                   np.argmin(lFoot[1][:rebound]) / 2)
-    threshold = min([min(diff_r[high-4:high+2]), min(diff_l[high-4:high+2])])
-    startLooking = np.argmax(abs(diff_l[high:rebound])) + high
+    minPoint = int((np.argmin(rFoot[1][:rebound]) +
+                   np.argmin(lFoot[1][:rebound])) / 2)
+    if high <= 4:
+        init = 0
+        end = 4
+    else:
+        init = high - 4
+        end = high + 2
+    threshold = min([np.average(diff_r[init:end]), np.average(diff_l[init:end])])
+    startLooking = np.argmax(-1*(diff_l[high:rebound])) + high
     for i in range(startLooking, minPoint):
         if diff_r[i] > threshold or diff_l[i] > threshold:
-            return i + 1
+            return i
 
     return minPoint - 1
 
