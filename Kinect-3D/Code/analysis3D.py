@@ -2,7 +2,7 @@ import os.path
 import myUtils as fnc
 import numpy as np
 import matplotlib
-# matplotlib.use('pdf')
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 folder = os.path.abspath('../') + '/Data/Results/'
@@ -226,6 +226,7 @@ for i in range(nJumps):
 #          PLOT ALL DATA           #
 ####################################
 
+'''
 #========================
 # All data Raw
 #========================
@@ -567,13 +568,7 @@ plt.plot(np.full(100, time[separator[2]]), np.linspace(60, 160, 100), 'k-.',
          linewidth=2)
 plt.plot(np.full(100, time[separator[3]]), np.linspace(60, 160, 100), 'k-.',
          linewidth=2)
-'''
-plt.plot(rFoot[0], time, label='Right Foot')
-plt.plot(lFoot[0], time, label='Left Foot')
-plt.plot(rKnee[0], time, label='Right Knee')
-plt.plot(lKnee[0], time, label='Left Knee')
-plt.plot((lHip[0] + rHip[0])/2, time, label='Average Hip')
-'''
+
 # plt.plot(time, lHip[0], label='Left Hip')
 plt.legend(loc='upper right')
 plt.savefig(folder + name + '_cm.png', dpi=myDPI)
@@ -587,4 +582,67 @@ plt.plot(time, rFoot[0], label='X Foot')
 plt.plot(time, rFoot[1], label='Y Foot')
 plt.legend(loc='upper right')
 # plt.show()
+plt.close
+'''
+
+#===========
+# Animation
+#==========
+plt.figure(figsize=(16, 9))
+name = "X_Y"
+plt.xlabel('X / cm')
+plt.ylabel('Y / cm')
+rShoulder_cut = fnc.splitJumps(rShoulder, separator)
+lShoulder_cut = fnc.splitJumps(lShoulder, separator)
+head_cut = fnc.splitJumps(head, separator)
+neck_cut = fnc.splitJumps(neck, separator)
+rHand_cut = fnc.splitJumps(rHand, separator)
+lHand_cut = fnc.splitJumps(lHand, separator)
+rHip_cut = fnc.splitJumps(rHip, separator)
+lHip_cut = fnc.splitJumps(lHip, separator)
+lElbow_cut = fnc.splitJumps(lElbow, separator)
+rElbow_cut = fnc.splitJumps(rElbow, separator)
+torso_cut = fnc.splitJumps(torso, separator)
+for j in range(nJumps):
+    print(len(time_cut[j]))
+    for i in range(len(time_cut[j]) - 3):
+        plt.axis([25, 225, -50, 250])
+        plt.title("Time {0}s".format(time[i]))
+        plt.plot(rShoulder_cut[j][0][i], rShoulder_cut[j][1][i+3], 'r<', markersize=10, label='Right Shoulder')
+        plt.plot(lShoulder_cut[j][0][i], lShoulder_cut[j][1][i+3], 'r>', markersize=10, label='Left Shoulder')
+        plt.plot(     head_cut[j][0][i],      head_cut[j][1][i+3], 'bo', markersize=10, label='Head')
+        plt.plot(     neck_cut[j][0][i],      neck_cut[j][1][i+3], 'b+', markersize=10, label='Neck')
+        plt.plot(    rHand_cut[j][0][i],     rHand_cut[j][1][i+3], 'c<', markersize=10, label='Right Hand')
+        plt.plot(    lHand_cut[j][0][i],     lHand_cut[j][1][i+3], 'c>', markersize=10, label='Left Hand')
+        plt.plot(   rElbow_cut[j][0][i],    rElbow_cut[j][1][i+3], 'k<', markersize=10, label='Right Elbow')
+        plt.plot(   lElbow_cut[j][0][i],    lElbow_cut[j][1][i+3], 'k>', markersize=10, label='Left Elbow')
+        plt.plot(    torso_cut[j][0][i],     torso_cut[j][1][i+3], 'r*', markersize=10, label='Torso')
+        plt.plot(    rFoot_cut[j][0][i],     rFoot_cut[j][1][i+3], 'g<', markersize=10, label='Right Foot')
+        plt.plot(    lFoot_cut[j][0][i],     lFoot_cut[j][1][i+3], 'g>', markersize=10, label='Left Foot')
+        plt.plot(    rKnee_cut[j][0][i],     rKnee_cut[j][1][i+3], 'm<', markersize=10, label='Right Knee')
+        plt.plot(    lKnee_cut[j][0][i],     lKnee_cut[j][1][i+3], 'm>', markersize=10, label='Left Knee')
+        plt.plot(     rHip_cut[j][0][i],      rHip_cut[j][1][i+3],  '<', markersize=10, label='Right Hip', color='xkcd:maroon')
+        plt.plot(     lHip_cut[j][0][i],      lHip_cut[j][1][i+3],  '>', markersize=10, label='Left Hip',  color='xkcd:maroon')
+
+        plt.plot(rShoulder_cut[j][0][i:i+3], rShoulder_cut[j][1][i:i+3], 'r<', markersize=3,)
+        plt.plot(lShoulder_cut[j][0][i:i+3], lShoulder_cut[j][1][i:i+3], 'r>', markersize=3,)
+        plt.plot(     head_cut[j][0][i:i+3],      head_cut[j][1][i:i+3], 'bo', markersize=3,)
+        plt.plot(     neck_cut[j][0][i:i+3],      neck_cut[j][1][i:i+3], 'b+', markersize=3,)
+        plt.plot(    rHand_cut[j][0][i:i+3],     rHand_cut[j][1][i:i+3], 'c<', markersize=3,)
+        plt.plot(    lHand_cut[j][0][i:i+3],     lHand_cut[j][1][i:i+3], 'c>', markersize=3,)
+        plt.plot(   rElbow_cut[j][0][i:i+3],    rElbow_cut[j][1][i:i+3], 'k<', markersize=3,)
+        plt.plot(   lElbow_cut[j][0][i:i+3],    lElbow_cut[j][1][i:i+3], 'k>', markersize=3,)
+        plt.plot(    torso_cut[j][0][i:i+3],     torso_cut[j][1][i:i+3], 'r*', markersize=3,)
+        plt.plot(    rFoot_cut[j][0][i:i+3],     rFoot_cut[j][1][i:i+3], 'g<', markersize=3,)
+        plt.plot(    lFoot_cut[j][0][i:i+3],     lFoot_cut[j][1][i:i+3], 'g>', markersize=3,)
+        plt.plot(    rKnee_cut[j][0][i:i+3],     rKnee_cut[j][1][i:i+3], 'm<', markersize=3,)
+        plt.plot(    lKnee_cut[j][0][i:i+3],     lKnee_cut[j][1][i:i+3], 'm>', markersize=3,)
+        plt.plot(     rHip_cut[j][0][i:i+3],      rHip_cut[j][1][i:i+3],  '<', markersize=3, color='xkcd:maroon')
+        plt.plot(     lHip_cut[j][0][i:i+3],      lHip_cut[j][1][i:i+3],  '>', markersize=3, color='xkcd:maroon')
+        plt.legend(loc='best')
+        # plt.show()
+        name = folder + 'Animations/' + 'Jump{0:1d}LowerBody{1:02d}_cm.png'.format(j, i)
+        plt.savefig(name, dpi=myDPI)
+        plt.clf()
+
 

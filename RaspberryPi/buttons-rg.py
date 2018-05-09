@@ -42,16 +42,19 @@ previous_status = ''
 try:
     while button_press < 20:             # read inputs until 19 changes are made
         status_list = [GPIO.input(25), GPIO.input(24), GPIO.input(23)]
+        current_status = ''
         for i in range(0,3):
-            if status_list[i]:
-                status_list[i] = "1"
-            else:
-                status_list[i] = "0"
+                current_status += str(status_list[i])
         # dump current status values in a variable
-        current_status = ''.join((status_list[0],status_list[1],status_list[2]))
+        # current_status = ''.join((status_list[0],status_list[1],status_list[2]))
         # if that variable not same as last time 
         if current_status != previous_status:
-            print current_status                # print the results 
+            if sum(status_list) == 0:
+                print "!!!"
+            elif sum(status_list) == 1:
+                print "???"
+            else:
+                print current_status                # print the results 
             # update status variable for next comparison
             previous_status = current_status
             button_press += 1                   # increment button_press counter
