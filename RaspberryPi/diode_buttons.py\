@@ -1,0 +1,34 @@
+import RPi.GPIO as GPIO
+ 
+GPIO.setmode(GPIO.BCM)                                            # initialise RPi.GPIO
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)                 # set up port 23 for INPUT pulled-up high
+GPIO.setup(22, GPIO.IN)                                           # set up port 22 for normal INPUT no pullup
+ 
+print "These are the connections you must make on the Gertboard for this test:"
+print "GP23 in J2 --- B3 in J3"
+print "GP22 in J2 --- B6 in J3"
+print "U3-out-B3 pin 1 --- BUF6 in top header"
+print "jumper on U4-in-B6"
+ 
+raw_input("When ready hit enter.\n")
+ 
+button_press = 0                                                  # set intial values for variables
+previous_status = ''
+ 
+try:
+    while button_press < 20:                                      # read inputs constantly until 19 changes are made
+        status_list = [GPIO.input(23), GPIO.input(22)]            # put input values in a list variable
+        for i in range(0,2):
+            if status_list[i]:
+                status_list[i] = "1"
+            else:
+                status_list[i] = "0" 
+        current_status = ''.join((status_list[0],status_list[1])) # dump current status values in a variable
+        if current_status != previous_status:                     # if that variable not same as last time
+            print current_status                                  # print the results 
+            previous_status = current_status                      # update status variable for next comparison
+            button_press += 1                                     # increment button_press counter
+ 
+except KeyboardInterrupt:                                         # trap a CTRL+C keyboard interrupt
+    GPIO.cleanup()                                                # resets all GPIO ports
+GPIO.cleanup()          
