@@ -12,11 +12,20 @@ board_type = sys.argv[-1]
 if GPIO.RPI_REVISION == 1:      # check Pi Revision to set port 21/27 correctly
     # define ports list for Revision 1 Pi
     ports = [25, 24, 23, 22, 21, 18, 17, 11, 10, 9, 8, 7]
+    ports_odd = [25, 23, 21, 17, 10, 8]
 else:
     # define ports list all others
     ports = [25, 24, 23, 22, 27, 18, 17, 11, 10, 9, 8, 7]   
+    ports_odd = [25, 23, 27, 17, 10, 8]
+ports_even = [24, 22, 18, 11, 9, 7]
 ports_rev = ports[:]                            # make a copy of ports list
 ports_rev.reverse()                             # and reverse it as we need both
+print(type(ports_rev))
+ports_odd_rev = ports_odd[::-1]             # reverse odd list
+print((ports_odd_rev))
+# ports_odd_rev = ports_odd_rev.reverse()             # THIS DOESNT WORK FOR NO REASON AT ALL
+ports_even_rev = ports_even[::-1]                   # reverse even list
+# ports_even_rev = ports_even_rev.reverse()           # THIS DOESNT WORK FOR NO REASON AT ALL
 
 GPIO.setmode(GPIO.BCM)                              # initialise RPi.GPIO
 
@@ -30,6 +39,11 @@ def led_drive(reps, multiple, direction):           # define function to drive
             sleep(0.11)                             # wait for ~0.11 seconds
             if not multiple:                        # if we're not leaving it on
                 GPIO.output(port_num, 0)            # switch it off again
+
+def led_all(ports, value):
+    for port_num in ports:
+	GPIO.output(port_num, value)
+    sleep(0.5)
 
 # Print Wiring Instructions appropriate to the board
 if board_type == "m":
@@ -57,17 +71,24 @@ else:
 raw_input("When ready hit enter.\n")
 
 try:                                        # Call the led driver function
-    led_drive(3, 0, ports)                  # for each required pattern
-    led_drive(1, 0, ports_rev)
+    # led_all(ports, 1)                       # Turn all on
+    led_all(ports, 0)                       # Turn all off
+    # led_drive(3, 0, ports)                  # for each required pattern
+    led_drive(1, 0, ports_even)         # to the right
+    led_drive(1, 0, ports_odd_rev)         # to the left
+    led_drive(1, 1, ports_even)         # to the right
+    led_drive(1, 1, ports_odd_rev)         # to the left
+    led_all(ports, 0)                       # Turn all off
+    # led_drive(1, 0, ports_even)             # to the left
         # run this once, switching off led before next one comes on, forwards
-    led_drive(1, 0, ports)                  
+    # led_drive(3, 0, ports)                  
         # run once, switch led off before next one, reverse direction
-    led_drive(1, 0, ports_rev)
+    # led_drive(1, 0, ports_rev)
         # (1, 1, ports) = run once, leaving each led on, forward direction
-    led_drive(1, 1, ports)
-    led_drive(1, 0, ports)        
-    led_drive(1, 1, ports)
-    led_drive(1, 0, ports)
+    # led_drive(1, 1, ports)
+    # led_drive(1, 0, ports)        
+    # led_drive(1, 1, ports)
+    # led_drive(1, 0, ports)
 except KeyboardInterrupt:                   # trap a CTRL+C keyboard interrupt
     GPIO.cleanup()                          # clean up GPIO ports on CTRL+C
 GPIO.cleanup()                              # clean up GPIO ports on normal exit
