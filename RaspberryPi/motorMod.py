@@ -18,7 +18,7 @@ board_type = sys.argv[-1]
 GPIO.setmode(GPIO.BCM)
 ports = [18,17]             # define which ports to be pulsed (using a list)
 Reps = 1                  # Number of time the signal is sent
-Hertz = .50                # Frecuencia
+Hertz = 2                # Frecuencia
 period = (1 / float(Hertz)) - 0.0003           # Period [I know it's confusing, don't look at me I didn't write the code, I'm just here bodging something]
 
 for port_num in ports:                       # set the ports up for output
@@ -39,7 +39,7 @@ def run_motor(Reps, pulse_width, port_num, time_period):
 def run_loop(startloop, endloop, step, port_num, printchar):
     for pulse_width_percent in range(startloop, endloop, step):
         # print (pulse_width_percent) 
-        # perc = 100 * (pulse_width_percent-startloop*1.0)/(endloop-startloop)
+        perc = 100 * (pulse_width_percent-startloop*1.0)/(endloop-startloop)
         print (perc, sep='', end='')
         sys.stdout.flush()
         pulse_width = pulse_width_percent / float(100) * period           # define exact pulse width
@@ -68,12 +68,14 @@ else:
 
 command = raw_input("When ready hit enter.\n>")
 print (">>>", sep='', end='')
-run_loop(5, 6, 1, 18,'+')      # (startloop, endloop, step, port_num, printchar, loopnum)
-run_loop(6, 5, -1, 18,'-')     # if you go all the way to 100% it seems out of control at the changeover
-sleep(0.2)                      # a slight pause before change direction stops sudden motor jerking
-print ("<<<", sep='', end='')
-run_loop(5, 6, 1, 17,'+')
-run_loop(6, 5, -1, 17,'-')
+print("You spin me right 'round, baby \n right 'round like record, baby \n 'round 'round 'round 'round")
+for i in range(5):
+	run_motor(1, .013*period, 18, 1)
+print("And reverse!")
+print("You spin me right 'round, baby \n right 'round like record, baby \n 'round 'round 'round 'round")
+for i in range(5):
+	run_motor(1, .013*period, 17, 1)
+print("\n The END")
 
 GPIO.output(port_num, False)            # Finish up: set both ports to off
 GPIO.cleanup()              # reset all ports used by this program on finishing
