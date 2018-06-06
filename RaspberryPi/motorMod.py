@@ -17,9 +17,9 @@ board_type = sys.argv[-1]
 
 GPIO.setmode(GPIO.BCM)
 ports = [18,17]             # define which ports to be pulsed (using a list)
-Reps = 1                  # 2000 Hz cycle time, so Reps=400 is 0.2s for each percentage ON
-Hertz = 1.00                # Cycle time. You can tweak this, Max 3000               
-Freq = (1 / float(Hertz)) - 0.0003           # run_motor loop code takes 0.0003s
+Reps = 1                  # Number of time the signal is sent
+Hertz = .50                # Frecuencia
+period = (1 / float(Hertz)) - 0.0003           # Period [I know it's confusing, don't look at me I didn't write the code, I'm just here bodging something]
 
 for port_num in ports:                       # set the ports up for output
     GPIO.setup(port_num, GPIO.OUT)           # set up GPIO output channel
@@ -38,12 +38,12 @@ def run_motor(Reps, pulse_width, port_num, time_period):
 
 def run_loop(startloop, endloop, step, port_num, printchar):
     for pulse_width_percent in range(startloop, endloop, step):
-	print (pulse_width_percent) 
-	perc = 100 * (pulse_width_percent-startloop*1.0)/(endloop-startloop)
+        # print (pulse_width_percent) 
+        # perc = 100 * (pulse_width_percent-startloop*1.0)/(endloop-startloop)
         print (perc, sep='', end='')
         sys.stdout.flush()
-        pulse_width = pulse_width_percent / float(100) * Freq           # define exact pulse width
-        time_period = Freq - (Freq * pulse_width_percent / float(100))  # sleep period needed to get required Hz
+        pulse_width = pulse_width_percent / float(100) * period           # define exact pulse width
+        time_period = period - (period * pulse_width_percent / float(100))  # sleep period needed to get required Hz
         run_motor(Reps, pulse_width, port_num, time_period)
     print("")                                                           # print line break between runs
 
