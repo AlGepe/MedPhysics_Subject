@@ -26,17 +26,23 @@ spi = spidev.SpiDev()
 spi.open(0,1)        # The Gertboard DAC is on SPI channel 1 (CE1 - aka GPIO7)
 
 channel = 3                         # set initial value to force user selection
-common = [0,0,0,160,240]            # 2nd byte common to both channels
+# common = [0,0,0,160,240]            # 2nd byte common to both channels
 # voltages = [0.0,0.5,1.02,1.36,2.04] # voltages for display
 voltages = [0.0, 0.44, 0.88, 1.22] # voltages for display
                                                 
 while not (channel == 1 or channel == 0):       # channel is set by user input
     channel = int(which_channel())              # continue asking until answer 0 or 1 given
 if channel == 1:                                # once proper answer given, carry on
-    num_list = [176,180,184,186,191]            # set correct channel-dependent list for byte 1
+    executions = [[48, 0],
+                  [51, 112],
+                  [54, 224],
+                  [57, 144]]
     # common = []
 else:
-    num_list = [48,52,56,58,63]
+    executions = [[175, 0],
+                  [179, 112],
+                  [182, 224],
+                  [185, 144]]
     # common = []
 
 print "These are the connections for the digital to analogue test:"
@@ -58,8 +64,8 @@ else:
 
 raw_input("When ready hit enter.\n")
 
-for i in range(5):
-    r = spi.xfer2([num_list[i],common[i]])                   #write the two bytes to the DAC
+for i in range(len(executions)):
+    r = spi.xfer2(executions[i])
     print "Your meter should read about %.2fV" % voltages[i]   
     raw_input("When ready hit enter.\n")
 
