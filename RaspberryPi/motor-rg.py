@@ -25,7 +25,7 @@ for port_num in ports:                       # set the ports up for output
     GPIO.setup(port_num, GPIO.OUT)           # set up GPIO output channel
     print ("setting up GPIO port:", port_num)
     GPIO.output(port_num, False)             # set both ports to OFF
-    
+
 def run_motor(Reps, pulse_width, port_num, time_period):
     try:                                     # try: except:, traps errors
         for i in range(0, Reps):

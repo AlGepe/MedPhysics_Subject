@@ -19,7 +19,7 @@ sleep(3)
 
 import spidev
 import sys
-board_type = sys.argv[-1]                        
+board_type = sys.argv[-1]
 
 def which_channel():
     channel = raw_input("Which channel do you want to test? Type 0 or 1.\n")  # User inputs channel number
