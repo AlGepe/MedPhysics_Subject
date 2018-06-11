@@ -11,6 +11,10 @@ sleep(3)
 
 
 board_type = sys.argv[-1]
+channel = 3
+char = '#'
+port = 17
+
 
 
 GPIO.setmode(GPIO.BCM)
@@ -75,15 +79,19 @@ command = raw_input("When ready hit enter.\n>")
 spi = spidev.SpiDev()
 spi.open(0,0)          # The Gertboard ADC is on SPI channel 0 (CE0 - aka GPIO8)
 
-while iterations < 6000:
+iterations = 0
+while iterations < 600:
     adc_value = (get_adc(channel))
     reps = adc_value / 16
     spaces = 64 - reps
     display(char, reps, adc_value, spaces)
-    percSignal = 2 * ((adc_value/1023.)-.5)
-    pWidth = percSignal * Freq
-    time_period = Freq - (Freq * percSignal)
-    run_motor(Reps, pWidth, port, time_period)
+    percSignal = abs((adc_value/1023.)-.5)
+    pWidth = abs(percSignal) * Freq
+    time_period = Freq - (Freq * abs(percSignal))
+    if adc_value > 512:
+        run_motor(Reps, pWidth, 18, time_period)
+    else:
+        run_motor(Reps, pWidth, 17, time_period)
     # sleep(0.05)       # need a delay so people using ssh don't get slow response
     iterations += 1   # limits length of program running to 30s [600 * 0.05]
 
