@@ -1,11 +1,7 @@
-#!/usr/bin/python2.7
-# Python 2.7 version by Alex Eames of http://RasPi.TV 
-# functionally equivalent to the Gertboard dtoa test by Gert Jan van Loo & Myra VanInwegen
-# Use at your own risk - I'm pretty sure the code is harmless, but check it yourself.
-# This will not work unless you have installed py-spidev as in the README.txt file
-# spi must also be enabled on your system
-
+import RPio.GPIO as GPIO
+import numpy as np
 import spidev
+import matplotlib.pyplot as plt
 import sys
 from time import sleep
 board_type = sys.argv[-1]
@@ -15,6 +11,13 @@ import subprocess
 unload_spi = subprocess.Popen('sudo rmmod spi_bcm2835', shell=True, stdout=subprocess.PIPE)
 start_spi = subprocess.Popen('sudo modprobe spi_bcm2835', shell=True, stdout=subprocess.PIPE)
 sleep(3)
+
+def get_adc(channel):                                   # read SPI data from MCP3002 chip
+    if ((channel > 1) or (channel < 0)):                # Only 2 channels 0 and 1 else return -1
+        return -1
+    r = spi.xfer2([1,(2+channel)<<6,0])  # these two lines are explained in more detail at the bottom
+    ret = ((r[1]&31) << 6) + (r[2] >> 2)
+    return ret
 
 def which_channel():
     channel = raw_input("Which channel do you want to test? Type 0 or 1.\n")  # User inputs channel number
@@ -27,7 +30,9 @@ spi.open(0,1)        # The Gertboard DAC is on SPI channel 1 (CE1 - aka GPIO7)
 
 channel = 3                         # set initial value to force user selection
 common = [0,0,0,160,240]            # 2nd byte common to both channels
-voltages = [0.0,0.5,1.02,1.36,2.04] # voltages for display
+
+voltages = np.array([0.0,0.5,1.02,1.36,2.04]) # voltages for display
+out = np.zeros(len(voltages))
 
 while not (channel == 1 or channel == 0):       # channel is set by user input
     channel = int(which_channel())              # continue asking until answer 0 or 1 given
@@ -54,14 +59,32 @@ else:
     print "  connect red probe to DA%d on J29" % channel
 
 raw_input("When ready hit enter.\n")
+convFactor = 3.3/1023
 
-for i in range(5):
+for i in range(len(voltages)):
+    spi.open(0,1)        # The Gertboard DAC is on SPI channel 1 (CE1 - aka GPIO7)
     r = spi.xfer2([num_list[i],common[i]])                   #write the two bytes to the DAC
     print "Your meter should read about %.2fV" % voltages[i]   
-    raw_input("When ready hit enter.\n")
+    spi.open(0,0)
+    out[i] = (get_adc(channel)) * convFactor
+
+rB = 22000
+x = (voltages - 0.6)/rB
+rK = 600
+y = (3.3 - out)/rK
+A = np.vstack([x, np.ones(len(x))]).T
+m, b = np.linalg.lstsq(A, y)[0]
+plt.plot(x, y, 'o', label='Original data', markersize=10)
+plt.plot(x, m*x + b, 'r', label='Fitted line')
+plt.legend()
+plt.show()
+print("Slope: " +m+ "\nOffset: " +b)
 
 r = spi.xfer2([16,0])  # switch off channel A = 00010000 00000000 [16,0]
 r = spi.xfer2([144,0]) # switch off channel B = 10010000 00000000 [144,0]
+
+
+
 
 # The DAC is controlled by writing 2 bytes (16 bits) to it. 
 # So we need to write a 16 bit word to DAC
