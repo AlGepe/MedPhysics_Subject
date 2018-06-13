@@ -1,3 +1,9 @@
+Original code from Gertboard Test Suite Programs in Python have been modified for different purposes to complete the Subject: Nowe technologie w fizyce biomedycznej [New Technologies in biomedical Physics]
+
+Final (self designed) project was a temperature-controlled fan that allows for speed override using a potentiometer and the buttons present on the Gertboard.
+
+Feel free to use my ideas or code and stick to the original code for the pieces of code from Gertboard Test Suite Programs in Python
+
 
 Readme File for Gertboard Test Suite Programs in Python. 
 Now with Multiface support, as of 10 April 2013.
@@ -85,7 +91,7 @@ cd ~
 git clone git://github.com/doceme/py-spidev 
 
 
-If you don’t have git installed, the above command will fail. Install git with...
+If you donâ€™t have git installed, the above command will fail. Install git with...
 
 sudo apt-get update
 sudo apt-get install git
